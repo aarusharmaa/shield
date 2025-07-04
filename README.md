@@ -79,4 +79,7 @@ MORE SOS-
 
 <img width="1259" alt="Screenshot 2025-07-05 at 3 50 25 AM" src="https://github.com/user-attachments/assets/47bc9305-3e23-4aa5-b805-60c5b6d0fd95" />
 
+SOS SENT:
+<img width="1440" alt="Screenshot 2025-07-05 at 3 47 57 AM" src="https://github.com/user-attachments/assets/fa4099dd-92d1-47ba-bebe-13b7ad4893a0" />
+
 
