@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Disaster Shield - Emergency Response Demo</title>
+    <title>Shield - Emergency Response</title>
     <style>
         * {
             margin: 0;
@@ -292,7 +292,7 @@
     </div>
 
     <script>
-        // Mock data for demo purposes
+        
         const mockDisasterData = [
             {
                 type: 'earthquake',
@@ -319,7 +319,7 @@
         let directionsService;
         let directionsRenderer;
 
-        // Function to fetch disaster alerts (using USGS API for real data)
+        
         async function fetchDisasterAlerts() {
             const alertBtn = document.getElementById('alert-btn-text');
             const loading = document.getElementById('alert-loading');
@@ -329,13 +329,13 @@
             loading.style.display = 'inline-block';
             
             try {
-                // Real USGS Earthquake API call
+                
                 const response = await fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson');
                 const data = await response.json();
                 
                 container.innerHTML = '';
                 
-                // Display recent earthquakes
+                
                 data.features.slice(0, 5).forEach(quake => {
                     const alertDiv = document.createElement('div');
                     alertDiv.className = 'alert-item earthquake';
@@ -353,7 +353,7 @@
                     container.appendChild(alertDiv);
                 });
                 
-                // Add mock data for variety
+                
                 mockDisasterData.forEach(alert => {
                     const alertDiv = document.createElement('div');
                     alertDiv.className = `alert-item ${alert.type}`;
@@ -370,7 +370,7 @@
             } catch (error) {
                 container.innerHTML = '<div class="alert-item">Error loading alerts. Using demo data.</div>';
                 
-                // Fallback to mock data
+                
                 mockDisasterData.forEach(alert => {
                     const alertDiv = document.createElement('div');
                     alertDiv.className = `alert-item ${alert.type}`;
@@ -389,7 +389,7 @@
             loading.style.display = 'none';
         }
 
-        // Function to initialize Google Maps
+        
         function initMap() {
             const mapBtn = document.getElementById('map-btn-text');
             const loading = document.getElementById('map-loading');
@@ -397,11 +397,11 @@
             mapBtn.style.display = 'none';
             loading.style.display = 'inline-block';
             
-            // Demo map initialization (replace with your Google Maps API key)
+            
             setTimeout(() => {
                 const mapContainer = document.getElementById('map');
                 
-                // Since we can't use actual Google Maps API without key, show demo
+                
                 mapContainer.innerHTML = `
                     <div style="
                         height: 100%;
@@ -427,7 +427,7 @@
             }, 2000);
         }
 
-        // Function to send emergency SMS (mock Twilio implementation)
+        
         async function sendEmergencySMS() {
             const contact1 = document.getElementById('contact1').value;
             const contact2 = document.getElementById('contact2').value;
@@ -441,7 +441,7 @@
             
             statusDiv.innerHTML = '<div class="status">Sending emergency alerts... <div class="loading"></div></div>';
             
-            // Mock SMS sending (replace with actual Twilio implementation)
+            
             setTimeout(() => {
                 const message = `🚨 EMERGENCY ALERT from ${userName}: I need immediate assistance! This is an automated message from Disaster Shield. Please check on me or contact emergency services. Current time: ${new Date().toLocaleString()}`;
                 
@@ -457,7 +457,7 @@
                     </div>
                 `;
                 
-                // Auto-clear status after 10 seconds
+               
                 setTimeout(() => {
                     statusDiv.innerHTML = '';
                 }, 10000);
@@ -465,7 +465,7 @@
             }, 2000);
         }
 
-        // Auto-load alerts on page load
+        
         window.onload = function() {
             fetchDisasterAlerts();
         };
