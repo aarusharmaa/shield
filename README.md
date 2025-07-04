@@ -75,8 +75,8 @@ SCREENSHOT OF DIFFERENT AREAS WHERE DISASTER OCCUERED:
 SCREENSHOT SOS MESSAGING:
 <img width="1259" alt="Screenshot 2025-07-05 at 3 50 25 AM" src="https://github.com/user-attachments/assets/ab953493-0367-41e5-8785-65ce529e2acb" />
 
-<img width="1440" alt="Screenshot 2025-07-05 at 3 47 57 AM" src="https:/![Uploading Screenshot 2025-07-05 at 3.50.25 AM.png…]()
-/github.com/user-attachments/assets/5bf92c81-bb01-4db2-a839-7267104530b1" />
+MORE SOS-
 
+<img width="1259" alt="Screenshot 2025-07-05 at 3 50 25 AM" src="https://github.com/user-attachments/assets/47bc9305-3e23-4aa5-b805-60c5b6d0fd95" />
 
 
