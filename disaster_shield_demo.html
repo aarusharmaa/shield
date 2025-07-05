@@ -3,472 +3,2184 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shield - Emergency Response</title>
+    <title>Shield: Your Safety Shield</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * {
+        /* CSS Variables for Theming */
+        :root {
+            --background-color: #f0f2f5;
+            --card-background: #ffffff;
+            --text-color: #333333;
+            --primary-color: #ef4444; /* Red for alerts/SOS */
+            --secondary-color: #3b82f6; /* Blue for actions */
+            --border-color: #e5e7eb;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --button-hover-bg: #dc2626;
+            --button-text-color: #ffffff;
+            --input-border: #d1d5db;
+            --placeholder-color: #9ca3af;
+            --error-color: #ef4444;
+            --success-color: #22c55e;
+            --info-color: #3b82f6;
+            --loading-color: #6366f1;
+        }
+
+        .dark-mode {
+            --background-color: #1a202c;
+            --card-background: #2d3748;
+            --text-color: #e2e8f0;
+            --primary-color: #f87171;
+            --secondary-color: #60a5fa;
+            --border-color: #4a5568;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --button-hover-bg: #ef4444;
+            --button-text-color: #ffffff;
+            --input-border: #4a5568;
+            --placeholder-color: #a0aec0;
+            --error-color: #f87171;
+            --success-color: #4ade80;
+            --info-color: #60a5fa;
+            --loading-color: #818cf8;
+        }
+
+        /* Base Styles */
+        body {
+            font-family: 'Inter', sans-serif;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
             min-height: 100vh;
-            color: #333;
+            transition: background-color 0.3s, color 0.3s;
+            overflow-x: hidden; /* Prevent horizontal scroll */
         }
-        
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
+            width: 100%;
+            box-sizing: border-box;
         }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 40px;
-            color: white;
+
+        /* Header */
+        header {
+            background-color: var(--card-background);
+            padding: 15px 20px;
+            box-shadow: 0 2px 4px var(--shadow-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            border-radius: 0 0 10px 10px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
         }
-        
-        .header h1 {
-            font-size: 3rem;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+
+        .logo {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
         }
-        
-        .header p {
-            font-size: 1.2rem;
-            opacity: 0.9;
+
+        .logo svg {
+            margin-right: 8px;
+            width: 28px;
+            height: 28px;
+            fill: var(--primary-color);
         }
-        
-        .dashboard {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 30px;
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
-        
-        .panel {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+
+        .header-controls button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+            color: var(--text-color);
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .header-controls button:hover {
+            background-color: var(--border-color);
+        }
+
+        .header-controls select {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--input-border);
+            background-color: var(--card-background);
+            color: var(--text-color);
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .header-controls select:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+        }
+
+        .mode-toggle {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-size: 1.2em;
+        }
+
+        .mode-toggle input[type="checkbox"] {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .mode-toggle .slider {
+            width: 40px;
+            height: 20px;
+            background-color: #ccc;
+            border-radius: 20px;
+            position: relative;
+            transition: background-color 0.3s;
+            margin-left: 10px;
+        }
+
+        .mode-toggle .slider:before {
+            content: "";
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: white;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s;
+        }
+
+        .mode-toggle input:checked + .slider {
+            background-color: var(--secondary-color);
+        }
+
+        .mode-toggle input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+
+        /* Main Content */
+        main {
+            flex-grow: 1;
+            padding: 20px 0;
+        }
+
+        .section {
+            background-color: var(--card-background);
+            border-radius: 12px;
+            box-shadow: 0 4px 8px var(--shadow-color);
+            padding: 30px;
+            margin-bottom: 25px;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeIn 0.8s ease-out;
         }
-        
-        .panel:hover {
+
+        .section:hover {
             transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+            box-shadow: 0 6px 12px var(--shadow-color);
         }
-        
-        .panel h2 {
-            color: #667eea;
+
+        .section h2 {
+            color: var(--primary-color);
+            margin-top: 0;
             margin-bottom: 20px;
-            font-size: 1.5rem;
+            font-size: 1.8em;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
             display: flex;
             align-items: center;
             gap: 10px;
         }
-        
-        .alert-list {
-            max-height: 300px;
-            overflow-y: auto;
+
+        .section h2 svg {
+            fill: var(--primary-color);
+            width: 24px;
+            height: 24px;
         }
-        
-        .alert-item {
-            padding: 15px;
-            margin-bottom: 10px;
-            border-left: 4px solid #ff6b6b;
-            background: #fff5f5;
-            border-radius: 8px;
-            animation: slideIn 0.5s ease;
-        }
-        
-        .alert-item.earthquake {
-            border-left-color: #ff6b6b;
-        }
-        
-        .alert-item.flood {
-            border-left-color: #4ecdc4;
-        }
-        
-        .alert-item.fire {
-            border-left-color: #ffa726;
-        }
-        
-        .alert-severity {
-            font-weight: bold;
-            color: #ff6b6b;
-            text-transform: uppercase;
-            font-size: 0.9rem;
-        }
-        
-        .alert-location {
-            font-size: 0.9rem;
-            color: #666;
-            margin-top: 5px;
-        }
-        
-        .map-container {
-            height: 300px;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-        
-        .emergency-section {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-        
-        .emergency-contacts {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        
-        .contact-input {
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 1rem;
-            width: 200px;
-            transition: border-color 0.3s ease;
-        }
-        
-        .contact-input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        
+
+        /* Buttons */
         .btn {
-            padding: 15px 30px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 25px;
             border: none;
             border-radius: 8px;
-            font-size: 1rem;
-            font-weight: bold;
             cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-decoration: none;
+            color: var(--button-text-color);
         }
-        
+
         .btn-primary {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
+            background-color: var(--primary-color);
         }
-        
-        .btn-emergency {
-            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
-            color: white;
-            font-size: 1.2rem;
-            padding: 20px 40px;
-            margin: 10px;
-        }
-        
-        .btn:hover {
+
+        .btn-primary:hover {
+            background-color: var(--button-hover-bg);
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
         }
-        
-        .status {
-            padding: 15px;
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: #3070d6; /* Darker blue */
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid var(--secondary-color);
+            color: var(--secondary-color);
+            box-shadow: none;
+        }
+
+        .btn-outline:hover {
+            background-color: var(--secondary-color);
+            color: var(--button-text-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
             margin-top: 20px;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        .form-group input[type="email"],
+        .form-group input[type="password"],
+        .form-group input[type="text"],
+        .form-group input[type="tel"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--input-border);
             border-radius: 8px;
-            font-weight: bold;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-size: 1em;
+            box-sizing: border-box;
+            transition: border-color 0.2s, background-color 0.2s;
+        }
+
+        .form-group input::placeholder {
+            color: var(--placeholder-color);
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        .error-message {
+            color: var(--error-color);
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        /* Alerts Section */
+        #alerts-list {
+            display: grid;
+            gap: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        }
+
+        .alert-card {
+            background-color: var(--background-color);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 5px var(--shadow-color);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .alert-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px var(--shadow-color);
+        }
+
+        .alert-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background-color: var(--primary-color);
+            border-radius: 10px 0 0 10px;
+        }
+
+        .alert-card h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .alert-card p {
+            margin-bottom: 8px;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+
+        .alert-card .alert-time {
+            font-size: 0.8em;
+            color: var(--placeholder-color);
+            text-align: right;
+            margin-top: 10px;
+        }
+
+        /* Map Section */
+        #map {
+            width: 100%;
+            height: 400px;
+            background-color: var(--border-color);
+            border-radius: 10px;
+            margin-top: 20px;
+            overflow: hidden; /* Ensure rounded corners are visible */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2em;
+            color: var(--text-color);
             text-align: center;
         }
-        
-        .status.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+
+        /* Contacts Section */
+        #contacts-list {
+            display: grid;
+            gap: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            margin-top: 20px;
         }
-        
-        .status.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+
+        .contact-card {
+            background-color: var(--background-color);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px var(--shadow-color);
         }
-        
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
+
+        .contact-card p {
+            margin: 0;
+            font-size: 1.05em;
+        }
+
+        .contact-card button {
+            background-color: var(--error-color);
+            color: var(--button-text-color);
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.2s;
+        }
+
+        .contact-card button:hover {
+            background-color: #c0392b;
+        }
+
+        /* SOS Section */
+        #sos-section {
+            text-align: center;
+        }
+
+        #sos-button {
+            width: 180px;
+            height: 180px;
             border-radius: 50%;
+            background-color: var(--primary-color);
+            color: white;
+            font-size: 2.5em;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 30px auto;
+            border: 8px solid var(--button-hover-bg);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+            animation: pulse 2s infinite;
+        }
+
+        #sos-button:hover {
+            background-color: var(--button-hover-bg);
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(239, 68, 68, 0.8);
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        /* Message Box */
+        .message-box {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--card-background);
+            color: var(--text-color);
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            z-index: 1001;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .message-box.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(-10px);
+        }
+
+        .message-box.success {
+            background-color: var(--success-color);
+            color: var(--button-text-color);
+        }
+
+        .message-box.error {
+            background-color: var(--error-color);
+            color: var(--button-text-color);
+        }
+
+        .message-box.info {
+            background-color: var(--info-color);
+            color: var(--button-text-color);
+        }
+
+        .message-box .icon {
+            font-size: 1.5em;
+        }
+
+        /* Loading Overlay */
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1002;
+            color: white;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        #loading-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .spinner {
+            border: 8px solid rgba(255, 255, 255, 0.3);
+            border-top: 8px solid var(--loading-color);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
             animation: spin 1s linear infinite;
         }
-        
+
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateX(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-        
-        .footer {
+
+        #loading-message {
+            margin-top: 20px;
+            font-size: 1.2em;
             text-align: center;
-            color: white;
-            margin-top: 40px;
-            opacity: 0.8;
         }
-        
+
+        /* Error Page (404) */
+        #error-page {
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 50px 20px;
+            flex-grow: 1;
+        }
+
+        #error-page.show {
+            display: flex;
+        }
+
+        #error-page h1 {
+            font-size: 4em;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        #error-page p {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            max-width: 600px;
+        }
+
+        /* Auth Section */
+        #auth-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-grow: 1;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .auth-card {
+            background-color: var(--card-background);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px var(--shadow-color);
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .auth-card h2 {
+            color: var(--secondary-color);
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+
+        .auth-card .btn {
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .auth-toggle {
+            margin-top: 20px;
+            font-size: 0.95em;
+        }
+
+        .auth-toggle a {
+            color: var(--secondary-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .auth-toggle a:hover {
+            text-decoration: underline;
+        }
+
+        /* Utility Classes */
+        .hidden {
+            display: none !important;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mt-4 {
+            margin-top: 1rem;
+        }
+
+        /* Responsive Design */
         @media (max-width: 768px) {
-            .dashboard {
-                grid-template-columns: 1fr;
-            }
-            
-            .header h1 {
-                font-size: 2rem;
-            }
-            
-            .emergency-contacts {
+            header {
                 flex-direction: column;
-                align-items: center;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .header-controls {
+                width: 100%;
+                justify-content: space-between;
+                margin-top: 10px;
+            }
+
+            .section {
+                padding: 20px;
+            }
+
+            .section h2 {
+                font-size: 1.5em;
+            }
+
+            .btn {
+                width: 100%;
+                padding: 10px 20px;
+                font-size: 1em;
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+
+            #map {
+                height: 300px;
+            }
+
+            #sos-button {
+                width: 150px;
+                height: 150px;
+                font-size: 2em;
+            }
+
+            .auth-card {
+                padding: 30px 20px;
+            }
+
+            .auth-card h2 {
+                font-size: 1.5em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+
+            header {
+                padding: 10px;
+            }
+
+            .logo {
+                font-size: 1.5em;
+            }
+
+            .header-controls {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            .header-controls button,
+            .header-controls select {
+                width: 100%;
+            }
+
+            .section {
+                padding: 15px;
+            }
+
+            .alert-card, .contact-card {
+                padding: 15px;
+            }
+
+            #sos-button {
+                width: 120px;
+                height: 120px;
+                font-size: 1.8em;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in-up {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+
+        /* Tutorial/Story Mode Styles */
+        #tutorial-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        #tutorial-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .tutorial-card {
+            background-color: var(--card-background);
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            position: relative;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .tutorial-card .character {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        .tutorial-card .tutorial-message {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .tutorial-card .tutorial-controls {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .tutorial-highlight {
+            position: relative;
+            z-index: 2001; /* Above overlay but below tutorial card */
+            box-shadow: 0 0 0 5px var(--secondary-color), 0 0 15px var(--secondary-color);
+            transition: box-shadow 0.3s ease;
+            border-radius: 12px;
+        }
+
+        /* Ensure highlighted elements are visible through the overlay */
+        .tutorial-highlight::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            background-color: transparent;
+            z-index: -1; /* Behind the element itself */
+            border-radius: 15px;
+        }
+
+        @media (max-width: 600px) {
+            .tutorial-card {
+                padding: 20px;
+            }
+            .tutorial-card .tutorial-message {
+                font-size: 1em;
+            }
+            .tutorial-card .tutorial-controls {
+                flex-direction: column;
+            }
+            .tutorial-card .btn {
+                width: 100%;
+                margin-bottom: 10px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🛡️ DISASTER SHIELD</h1>
-            <p>Real-time alerts • Safe navigation • Emergency response</p>
-        </div>
-        
-        <div class="dashboard">
-            <div class="panel">
-                <h2>🌍 Live Disaster Alerts</h2>
-                <button class="btn btn-primary" onclick="fetchDisasterAlerts()">
-                    <span id="alert-btn-text">Get Current Alerts</span>
-                    <span id="alert-loading" class="loading" style="display: none;"></span>
-                </button>
-                <div id="alerts-container" class="alert-list"></div>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="hidden">
+        <div class="spinner"></div>
+        <p id="loading-message">Loading Shield...</p>
+    </div>
+
+    <!-- Message Box -->
+    <div id="message-box" class="message-box">
+        <span class="icon"></span>
+        <span class="message-text"></span>
+    </div>
+
+    <!-- Tutorial Overlay -->
+    <div id="tutorial-overlay" class="hidden">
+        <div class="tutorial-card">
+            <div class="character" id="tutorial-character"></div>
+            <p class="tutorial-message" id="tutorial-message"></p>
+            <div class="tutorial-controls">
+                <button class="btn btn-outline" id="tutorial-skip-btn" data-lang-key="tutorialSkip">Skip Tour</button>
+                <button class="btn btn-secondary" id="tutorial-prev-btn" data-lang-key="tutorialPrev">Previous</button>
+                <button class="btn btn-primary" id="tutorial-next-btn" data-lang-key="tutorialNext">Next</button>
             </div>
-            
-            <div class="panel">
-                <h2>🗺️ Safe Route Navigation</h2>
-                <button class="btn btn-primary" onclick="initMap()">
-                    <span id="map-btn-text">Load Safe Routes</span>
-                    <span id="map-loading" class="loading" style="display: none;"></span>
-                </button>
-                <div id="map" class="map-container"></div>
-            </div>
-        </div>
-        
-        <div class="emergency-section">
-            <h2 style="color: #667eea; margin-bottom: 25px;">📲 Emergency SMS System</h2>
-            <div class="emergency-contacts">
-                <input type="tel" id="contact1" class="contact-input" placeholder="Emergency Contact 1" value="+1234567890">
-                <input type="tel" id="contact2" class="contact-input" placeholder="Emergency Contact 2" value="+0987654321">
-                <input type="text" id="user-name" class="contact-input" placeholder="Your Name" value="John Doe">
-            </div>
-            <button class="btn btn-emergency" onclick="sendEmergencySMS()">
-                🚨 SEND EMERGENCY ALERT
-            </button>
-            <div id="sms-status"></div>
-        </div>
-        
-        <div class="footer">
-            <p>Demo for Hackathon - Disaster Shield Emergency Response System</p>
-            <p>APIs: USGS Earthquake • Google Maps • Twilio SMS</p>
         </div>
     </div>
 
-    <script>
-        
-        const mockDisasterData = [
-            {
-                type: 'earthquake',
-                magnitude: 4.2,
-                location: 'Los Angeles, CA',
-                time: new Date().toLocaleTimeString(),
-                severity: 'moderate'
-            },
-            {
-                type: 'flood',
-                location: 'Houston, TX',
-                time: new Date(Date.now() - 300000).toLocaleTimeString(),
-                severity: 'high'
-            },
-            {
-                type: 'fire',
-                location: 'San Francisco, CA',
-                time: new Date(Date.now() - 600000).toLocaleTimeString(),
-                severity: 'low'
-            }
-        ];
+    <!-- Header -->
+    <header>
+        <div class="logo">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2L2 7V17L12 22L22 17V7L12 2ZM12 4.472L19.866 8.736L12 13L4.134 8.736L12 4.472ZM4 10.278L11 14.167V19.528L4 15.639V10.278ZM13 14.167L20 10.278V15.639L13 19.528V14.167Z"/>
+            </svg>
+            Shield
+        </div>
+        <div class="header-controls">
+            <button id="start-tour-btn" class="btn btn-outline" data-lang-key="startTour">Start Tour</button>
+            <label class="mode-toggle">
+                <input type="checkbox" id="darkModeToggle">
+                <span class="slider"></span>
+                <span id="darkModeLabel">Light Mode</span>
+            </label>
+            <select id="language-switcher">
+                <option value="en">English</option>
+                <option value="hi">हिंदी</option>
+                <option value="es">Español</option>
+            </select>
+            <button id="logout-button" class="hidden">Logout</button>
+        </div>
+    </header>
 
+    <!-- Auth Section -->
+    <div id="auth-section" class="hidden">
+        <div class="auth-card">
+            <h2 id="auth-title">Login</h2>
+            <form id="auth-form">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" placeholder="your.email@example.com" required>
+                    <div id="email-error" class="error-message hidden"></div>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="********" required>
+                    <div id="password-error" class="error-message hidden"></div>
+                </div>
+                <button type="submit" class="btn btn-secondary" id="auth-submit-btn">Login</button>
+            </form>
+            <p class="auth-toggle">
+                <span id="auth-switch-text">Don't have an account?</span>
+                <a href="#" id="auth-switch-link">Sign Up</a>
+            </p>
+            <p class="mt-4" id="user-id-display-container">User ID: <span id="current-user-id">Not logged in</span></p>
+        </div>
+    </div>
+
+    <!-- Main App Content -->
+    <main id="app-content" class="container">
+        <!--
+            The 'hidden' class was removed from this 'main' element.
+            This allows all content sections to be visible by default when the HTML file
+            is opened directly in a browser (e.g., from VS Code), without requiring
+            Firebase authentication to complete first.
+            If you want to revert to the original behavior where content is shown only
+            after authentication, add 'hidden' back to the class list:
+            <main id="app-content" class="container hidden">
+        -->
+        <!-- Alert Section -->
+        <section id="alert-section" class="section fade-in-up">
+            <h2>
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L1 21H23L12 2ZM13 8V14H11V8H13ZM13 16V18H11V16H13Z"/>
+                </svg>
+                <span data-lang-key="alertsTitle">Real-Time Disaster Alerts</span>
+            </h2>
+            <p data-lang-key="alertsDescription">Get instant updates on hazards near your location.</p>
+            <div id="alerts-list">
+                <!-- Alerts will be dynamically loaded here -->
+            </div>
+            <button id="refresh-alerts-btn" class="btn btn-secondary mt-4" data-lang-key="refreshAlerts">Refresh Alerts</button>
+        </section>
+
+        <!-- Map Section -->
+        <section id="map-section" class="section fade-in-up">
+            <h2>
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2ZM12 11.5C10.62 11.5 9.5 10.38 9.5 9C9.5 7.62 10.62 6.5 12 6.5C13.38 6.5 14.5 7.62 14.5 9C14.5 10.38 13.38 11.5 12 11.5Z"/>
+                </svg>
+                <span data-lang-key="mapTitle">Smart Navigation & Safe Routes</span>
+            </h2>
+            <p data-lang-key="mapDescription">Visualize danger zones and find the safest evacuation routes.</p>
+            <div id="map">
+                <!-- Map will load here or show an error message -->
+                <p id="map-error-message" style="color: var(--error-color); display: none;"></p>
+            </div>
+            <p class="mt-4 text-center" data-lang-key="mapNote">
+                *Google Maps API requires a key. Please replace 'YOUR_GOOGLE_MAPS_API_KEY' in the script.
+            </p>
+        </section>
+
+        <!-- SOS Section -->
+        <section id="sos-section" class="section fade-in-up">
+            <h2>
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20ZM11 15H13V17H11V15ZM11 7H13V13H11V7Z"/>
+                </svg>
+                <span data-lang-key="sosTitle">One-Click Emergency SOS</span>
+            </h2>
+            <p data-lang-key="sosDescription">Instantly notify your trusted contacts during a crisis.</p>
+            <button id="sos-button" class="btn-primary" data-lang-key="sosButton">SOS</button>
+            <p class="mt-4 text-center" data-lang-key="sosNote">
+                *Twilio SMS sending is simulated in this prototype. A real implementation requires a backend.
+            </p>
+        </section>
+
+        <!-- Trusted Contacts Section -->
+        <section id="contacts-section" class="section fade-in-up">
+            <h2>
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z"/>
+                </svg>
+                <span data-lang-key="contactsTitle">Trusted Emergency Contacts</span>
+            </h2>
+            <p data-lang-key="contactsDescription">Add phone numbers to alert quickly in an emergency.</p>
+            <form id="add-contact-form">
+                <div class="form-group">
+                    <label for="contact-name" data-lang-key="contactNameLabel">Contact Name</label>
+                    <input type="text" id="contact-name" placeholder="John Doe" required>
+                    <div id="contact-name-error" class="error-message hidden"></div>
+                </div>
+                <div class="form-group">
+                    <label for="contact-phone" data-lang-key="contactPhoneLabel">Phone Number</label>
+                    <input type="tel" id="contact-phone" placeholder="+1234567890" required pattern="^\+\d{1,15}$">
+                    <div id="contact-phone-error" class="error-message hidden"></div>
+                </div>
+                <button type="submit" class="btn btn-secondary" data-lang-key="addContactButton">Add Contact</button>
+            </form>
+            <div id="contacts-list">
+                <!-- Contacts will be dynamically loaded here -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Error Page -->
+    <div id="error-page" class="hidden">
+        <h1>404</h1>
+        <p data-lang-key="errorPageMessage">Oops! Something went wrong or the page you're looking for doesn't exist.</p>
+        <button class="btn btn-secondary" onclick="window.location.reload()" data-lang-key="reloadPageButton">Reload Page</button>
+    </div>
+
+    <!-- Firebase SDK (v9.1.0 or later recommended for modular API) -->
+    <script type="module">
+        // Firebase imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import {
+            getAuth,
+            signInAnonymously,
+            signInWithCustomToken,
+            onAuthStateChanged,
+            createUserWithEmailAndPassword,
+            signInWithEmailAndPassword,
+            signOut
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import {
+            getFirestore,
+            collection,
+            doc,
+            addDoc,
+            setDoc,
+            getDocs,
+            deleteDoc,
+            onSnapshot,
+            query,
+            where
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- Global Variables (Provided by Canvas Environment) ---
+        // __app_id: The current app ID provided in the canvas environment as a string.
+        // __firebase_config: Firebase config provided in the canvas environment as a string.
+        // __initial_auth_token: Firebase custom auth token string automatically provided.
+
+        // Initialize Firebase
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+
+        let app;
+        let db;
+        let auth;
+        let userId = null;
+        let isAuthReady = false; // Flag to indicate if auth state has been checked
+        let isMapScriptLoaded = false; // Flag to prevent multiple Google Maps script loads
+
+        // --- DOM Elements ---
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const loadingMessage = document.getElementById('loading-message');
+        const messageBox = document.getElementById('message-box');
+        const messageText = messageBox.querySelector('.message-text');
+        const messageIcon = messageBox.querySelector('.icon');
+        const appContent = document.getElementById('app-content');
+        const authSection = document.getElementById('auth-section');
+        const errorPage = document.getElementById('error-page');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const darkModeLabel = document.getElementById('darkModeLabel');
+        const languageSwitcher = document.getElementById('language-switcher');
+        const logoutButton = document.getElementById('logout-button');
+        const currentUserDisplay = document.getElementById('current-user-id');
+        const mapErrorMessage = document.getElementById('map-error-message');
+
+        // Auth Form Elements
+        const authForm = document.getElementById('auth-form');
+        const authTitle = document.getElementById('auth-title');
+        const authSubmitBtn = document.getElementById('auth-submit-btn');
+        const authSwitchText = document.getElementById('auth-switch-text');
+        const authSwitchLink = document.getElementById('auth-switch-link');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const emailError = document.getElementById('email-error');
+        const passwordError = document.getElementById('password-error');
+
+        // Main App Elements
+        const alertsList = document.getElementById('alerts-list');
+        const refreshAlertsBtn = document.getElementById('refresh-alerts-btn');
+        const sosButton = document.getElementById('sos-button');
+        const addContactForm = document.getElementById('add-contact-form');
+        const contactNameInput = document.getElementById('contact-name');
+        const contactPhoneInput = document.getElementById('contact-phone');
+        const contactNameError = document.getElementById('contact-name-error');
+        const contactPhoneError = document.getElementById('contact-phone-error');
+        const contactsList = document.getElementById('contacts-list');
+
+        // Tutorial Elements
+        const startTourBtn = document.getElementById('start-tour-btn');
+        const tutorialOverlay = document.getElementById('tutorial-overlay');
+        const tutorialCharacter = document.getElementById('tutorial-character');
+        const tutorialMessage = document.getElementById('tutorial-message');
+        const tutorialPrevBtn = document.getElementById('tutorial-prev-btn');
+        const tutorialNextBtn = document.getElementById('tutorial-next-btn');
+        const tutorialSkipBtn = document.getElementById('tutorial-skip-btn');
+
+
+        // --- Localization Data ---
+        const translations = {
+            en: {
+                darkModeLabel: "Light Mode",
+                alertsTitle: "Real-Time Disaster Alerts",
+                alertsDescription: "Get instant updates on hazards near your location.",
+                refreshAlerts: "Refresh Alerts",
+                mapTitle: "Smart Navigation & Safe Routes",
+                mapDescription: "Visualize danger zones and find the safest evacuation routes.",
+                mapNote: "*Google Maps API requires a key. Please replace 'YOUR_GOOGLE_MAPS_API_KEY' in the script.",
+                sosTitle: "One-Click Emergency SOS",
+                sosDescription: "Instantly notify your trusted contacts during a crisis.",
+                sosButton: "SOS",
+                sosNote: "*Twilio SMS sending is simulated in this prototype. A real implementation requires a backend.",
+                contactsTitle: "Trusted Emergency Contacts",
+                contactsDescription: "Add phone numbers to alert quickly in an emergency.",
+                contactNameLabel: "Contact Name",
+                contactPhoneLabel: "Phone Number",
+                addContactButton: "Add Contact",
+                loginTitle: "Login",
+                signupTitle: "Sign Up",
+                loginButton: "Login",
+                signupButton: "Sign Up",
+                authSwitchTextLogin: "Don't have an account?",
+                authSwitchLinkLogin: "Sign Up",
+                authSwitchTextSignup: "Already have an account?",
+                authSwitchLinkSignup: "Login",
+                logoutButton: "Logout",
+                loadingApp: "Loading Shield...",
+                loadingAlerts: "Fetching real-time alerts...",
+                loadingMap: "Loading map and routes...",
+                loadingContacts: "Retrieving trusted contacts...",
+                alertSuccess: "SOS sent successfully (simulated)! Stay safe.",
+                alertError: "Failed to send SOS. Please try again.",
+                contactAdded: "Contact added successfully!",
+                contactRemoved: "Contact removed.",
+                contactAddError: "Failed to add contact.",
+                contactRemoveError: "Failed to remove contact.",
+                authLoginSuccess: "Logged in successfully!",
+                authSignupSuccess: "Account created successfully! Please login.",
+                authLogoutSuccess: "Logged out successfully.",
+                authError: "Authentication failed. Please check your credentials.",
+                emailRequired: "Email is required.",
+                emailInvalid: "Please enter a valid email address.",
+                passwordRequired: "Password is required.",
+                passwordMinLength: "Password must be at least 6 characters.",
+                contactNameRequired: "Contact name is required.",
+                contactPhoneRequired: "Phone number is required.",
+                contactPhoneInvalid: "Please enter a valid phone number (e.g., +1234567890).",
+                errorPageMessage: "Oops! Something went wrong or the page you're looking for doesn't exist.",
+                reloadPageButton: "Reload Page",
+                darkModeOn: "Dark Mode",
+                lightModeOn: "Light Mode",
+                userIdDisplay: "User ID:",
+                mapApiError: "Google Maps API not activated or invalid key. Please enable the Maps JavaScript API in your Google Cloud project for this API key: https://console.cloud.google.com/apis/library/maps-platform-apis",
+                startTour: "Start Tour",
+                tutorialSkip: "Skip Tour",
+                tutorialPrev: "Previous",
+                tutorialNext: "Next",
+                tutorialWelcome: "Hello! I'm your guide to Shield. Let's explore its features.",
+                tutorialAlerts: "This section provides real-time disaster alerts. Stay informed about hazards near you.",
+                tutorialMap: "Here you can see your location and potential danger zones on the map. It helps you find safe routes.",
+                tutorialSOS: "In an emergency, just one click on this SOS button will notify your trusted contacts.",
+                tutorialContacts: "Manage your emergency contacts here. Add or remove people you want to alert during a crisis.",
+                tutorialEnd: "That's the basic tour! You're now ready to use Shield. Stay safe!"
+            },
+            hi: {
+                darkModeLabel: "लाइट मोड",
+                alertsTitle: "वास्तविक समय आपदा अलर्ट",
+                alertsDescription: "अपने स्थान के पास खतरों पर तत्काल अपडेट प्राप्त करें।",
+                refreshAlerts: "अलर्ट ताज़ा करें",
+                mapTitle: "स्मार्ट नेविगेशन और सुरक्षित मार्ग",
+                mapDescription: "खतरनाक क्षेत्रों की कल्पना करें और सबसे सुरक्षित निकासी मार्ग खोजें।",
+                mapNote: "*Google Maps API को एक कुंजी की आवश्यकता है। कृपया स्क्रिप्ट में 'YOUR_GOOGLE_MAPS_API_KEY' को बदलें।",
+                sosTitle: "एक-क्लिक आपातकालीन एसओएस",
+                sosDescription: "संकट के दौरान अपने विश्वसनीय संपर्कों को तुरंत सूचित करें।",
+                sosButton: "एसओएस",
+                sosNote: "*ट्विलियो एसएमएस भेजना इस प्रोटोटाइप में सिम्युलेटेड है। वास्तविक कार्यान्वयन के लिए बैकएंड की आवश्यकता होती है।",
+                contactsTitle: "विश्वसनीय आपातकालीन संपर्क",
+                contactsDescription: "आपातकाल में तुरंत अलर्ट करने के लिए फोन नंबर जोड़ें।",
+                contactNameLabel: "संपर्क नाम",
+                contactPhoneLabel: "फोन नंबर",
+                addContactButton: "संपर्क जोड़ें",
+                loginTitle: "लॉग इन करें",
+                signupTitle: "साइन अप करें",
+                loginButton: "लॉग इन करें",
+                signupButton: "साइन अप करें",
+                authSwitchTextLogin: "खाता नहीं है?",
+                authSwitchLinkLogin: "साइन अप करें",
+                authSwitchTextSignup: "पहले से ही एक खाता है?",
+                authSwitchLinkSignup: "लॉग इन करें",
+                logoutButton: "लॉग आउट",
+                loadingApp: "शील्ड लोड हो रहा है...",
+                loadingAlerts: "वास्तविक समय अलर्ट प्राप्त कर रहा है...",
+                loadingMap: "मानचित्र और मार्ग लोड हो रहा है...",
+                loadingContacts: "विश्वसनीय संपर्क पुनः प्राप्त कर रहा है...",
+                alertSuccess: "एसओएस सफलतापूर्वक भेजा गया (सिम्युलेटेड)! सुरक्षित रहें।",
+                alertError: "एसओएस भेजने में विफल। कृपया पुनः प्रयास करें।",
+                contactAdded: "संपर्क सफलतापूर्वक जोड़ा गया!",
+                contactRemoved: "संपर्क हटा दिया गया।",
+                contactAddError: "संपर्क जोड़ने में विफल।",
+                contactRemoveError: "संपर्क हटाने में विफल।",
+                authLoginSuccess: "सफलतापूर्वक लॉग इन किया!",
+                authSignupSuccess: "खाता सफलतापूर्वक बनाया गया! कृपया लॉग इन करें।",
+                authLogoutSuccess: "सफलतापूर्वक लॉग आउट किया गया।",
+                authError: "प्रमाणीकरण विफल। कृपया अपनी क्रेडेंशियल जांचें।",
+                emailRequired: "ईमेल आवश्यक है।",
+                emailInvalid: "कृपया एक वैध ईमेल पता दर्ज करें।",
+                passwordRequired: "पासवर्ड आवश्यक है।",
+                passwordMinLength: "पासवर्ड कम से कम 6 वर्णों का होना चाहिए।",
+                contactNameRequired: "संपर्क नाम आवश्यक है।",
+                contactPhoneRequired: "फोन नंबर आवश्यक है।",
+                contactPhoneInvalid: "कृपया एक वैध फोन नंबर दर्ज करें (उदाहरण: +1234567890)।",
+                errorPageMessage: "उफ़! कुछ गलत हो गया या आप जिस पृष्ठ की तलाश कर रहे हैं वह मौजूद नहीं है।",
+                reloadPageButton: "पृष्ठ पुनः लोड करें",
+                darkModeOn: "डार्क मोड",
+                lightModeOn: "लाइट मोड",
+                userIdDisplay: "उपयोगकर्ता आईडी:",
+                mapApiError: "Google Maps API सक्रिय नहीं है या कुंजी अमान्य है। कृपया इस एपीआई कुंजी के लिए अपने Google Cloud प्रोजेक्ट में Maps JavaScript API सक्षम करें: https://console.cloud.google.com/apis/library/maps-platform-apis",
+                startTour: "टूर शुरू करें",
+                tutorialSkip: "टूर छोड़ें",
+                tutorialPrev: "पिछला",
+                tutorialNext: "अगला",
+                tutorialWelcome: "नमस्ते! मैं शील्ड के लिए आपका मार्गदर्शक हूँ। आइए इसकी विशेषताओं का अन्वेषण करें।",
+                tutorialAlerts: "यह अनुभाग वास्तविक समय आपदा अलर्ट प्रदान करता है। अपने आस-पास के खतरों के बारे में सूचित रहें।",
+                tutorialMap: "यहां आप मानचित्र पर अपना स्थान और संभावित खतरनाक क्षेत्र देख सकते हैं। यह आपको सुरक्षित मार्ग खोजने में मदद करता है।",
+                tutorialSOS: "आपातकाल में, इस एसओएस बटन पर सिर्फ एक क्लिक आपके विश्वसनीय संपर्कों को सूचित करेगा।",
+                tutorialContacts: "यहां अपने आपातकालीन संपर्कों को प्रबंधित करें। संकट के दौरान उन लोगों को जोड़ें या हटाएँ जिन्हें आप अलर्ट करना चाहते हैं।",
+                tutorialEnd: "यह बुनियादी टूर है! अब आप शील्ड का उपयोग करने के लिए तैयार हैं। सुरक्षित रहें!"
+            },
+            es: {
+                darkModeLabel: "Modo Claro",
+                alertsTitle: "Alertas de Desastres en Tiempo Real",
+                alertsDescription: "Recibe actualizaciones instantáneas sobre peligros cerca de tu ubicación.",
+                refreshAlerts: "Actualizar Alertas",
+                mapTitle: "Navegación Inteligente y Rutas Seguras",
+                mapDescription: "Visualiza zonas de peligro y encuentra las rutas de evacuación más seguras.",
+                mapNote: "*La API de Google Maps requiere una clave. Por favor, reemplaza 'YOUR_GOOGLE_MAPS_API_KEY' en el script.",
+                sosTitle: "SOS de Emergencia con Un Solo Clic",
+                sosDescription: "Notifica instantáneamente a tus contactos de confianza durante una crisis.",
+                sosButton: "SOS",
+                sosNote: "*El envío de SMS de Twilio se simula en este prototipo. Una implementación real requiere un backend.",
+                contactsTitle: "Contactos de Emergencia de Confianza",
+                contactsDescription: "Agrega números de teléfono para alertar rápidamente en una emergencia.",
+                contactNameLabel: "Nombre del Contacto",
+                contactPhoneLabel: "Número de Teléfono",
+                addContactButton: "Agregar Contacto",
+                loginTitle: "Iniciar Sesión",
+                signupTitle: "Registrarse",
+                loginButton: "Iniciar Sesión",
+                signupButton: "Registrarse",
+                authSwitchTextLogin: "¿No tienes una cuenta?",
+                authSwitchLinkLogin: "Registrarse",
+                authSwitchTextSignup: "¿Ya tienes una cuenta?",
+                authSwitchLinkSignup: "Iniciar Sesión",
+                logoutButton: "Cerrar Sesión",
+                loadingApp: "Cargando Shield...",
+                loadingAlerts: "Obteniendo alertas en tiempo real...",
+                loadingMap: "Cargando mapa y rutas...",
+                loadingContacts: "Recuperando contactos de confianza...",
+                alertSuccess: "SOS enviado con éxito (simulado)! Mantente a salvo.",
+                alertError: "No se pudo enviar el SOS. Por favor, inténtalo de nuevo.",
+                contactAdded: "¡Contacto añadido con éxito!",
+                contactRemoved: "Contacto eliminado.",
+                contactAddError: "No se pudo añadir el contacto.",
+                contactRemoveError: "No se pudo eliminar el contacto.",
+                authLoginSuccess: "¡Sesión iniciada con éxito!",
+                authSignupSuccess: "¡Cuenta creada con éxito! Por favor, inicia sesión.",
+                authLogoutSuccess: "Sesión cerrada con éxito.",
+                authError: "Autenticación fallida. Por favor, verifica tus credenciales.",
+                emailRequired: "El correo electrónico es obligatorio.",
+                emailInvalid: "Por favor, introduce una dirección de correo electrónico válida.",
+                passwordRequired: "La contraseña es obligatoria.",
+                passwordMinLength: "La contraseña debe tener al menos 6 caracteres.",
+                contactNameRequired: "El nombre del contacto es obligatorio.",
+                contactPhoneRequired: "El número de teléfono es obligatorio.",
+                contactPhoneInvalid: "Por favor, introduce un número de teléfono válido (ej. +1234567890).",
+                errorPageMessage: "¡Ups! Algo salió mal o la página que buscas no existe.",
+                reloadPageButton: "Recargar Página",
+                darkModeOn: "Modo Oscuro",
+                lightModeOn: "Modo Claro",
+                userIdDisplay: "ID de Usuario:",
+                mapApiError: "La API de Google Maps no está activada o la clave no es válida. Habilita la API de JavaScript de Maps en tu proyecto de Google Cloud para esta clave de API: https://console.cloud.google.com/apis/library/maps-platform-apis",
+                startTour: "Iniciar Tour",
+                tutorialSkip: "Omitir Tour",
+                tutorialPrev: "Anterior",
+                tutorialNext: "Siguiente",
+                tutorialWelcome: "¡Hola! Soy tu guía de Shield. ¡Exploremos sus características!",
+                tutorialAlerts: "Esta sección proporciona alertas de desastres en tiempo real. Mantente informado sobre los peligros cerca de ti.",
+                tutorialMap: "Aquí puedes ver tu ubicación y posibles zonas de peligro en el mapa. Te ayuda a encontrar rutas seguras.",
+                tutorialSOS: "En caso de emergencia, un solo clic en este botón SOS notificará a tus contactos de confianza.",
+                tutorialContacts: "Gestiona tus contactos de emergencia aquí. Añade o elimina personas a las que quieras alertar durante una crisis.",
+                tutorialEnd: "¡Ese es el recorrido básico! Ahora estás listo para usar Shield. ¡Mantente a salvo!"
+            }
+        };
+
+        let currentLanguage = localStorage.getItem('shieldLang') || 'en';
+        let isSignUpMode = false;
+
+        // --- Utility Functions ---
+
+        /**
+         * Displays a temporary message box.
+         * @param {string} message - The message to display.
+         * @param {'success'|'error'|'info'} type - Type of message (for styling).
+         * @param {number} duration - How long to show the message in ms.
+         */
+        function showMessageBox(message, type, duration = 3000) {
+            messageText.textContent = message;
+            messageBox.className = `message-box show ${type}`; // Reset classes and add type
+            // Set icon based on type
+            if (type === 'success') messageIcon.innerHTML = '&#10003;'; // Checkmark
+            else if (type === 'error') messageIcon.innerHTML = '&#x2716;'; // X mark
+            else messageIcon.innerHTML = '&#x2139;'; // Info icon
+
+            setTimeout(() => {
+                messageBox.classList.remove('show');
+            }, duration);
+        }
+
+        /**
+         * Shows the loading overlay with a message.
+         * @param {string} message - The message to display.
+         */
+        function showLoading(message) {
+            loadingMessage.textContent = message;
+            loadingOverlay.classList.remove('hidden');
+            loadingOverlay.classList.add('show');
+        }
+
+        /**
+         * Hides the loading overlay.
+         */
+        function hideLoading() {
+            loadingOverlay.classList.remove('show');
+            loadingOverlay.classList.add('hidden');
+        }
+
+        /**
+         * Applies the current language translations to the UI.
+         */
+        function applyLanguage() {
+            const lang = translations[currentLanguage];
+            if (!lang) return;
+
+            document.querySelectorAll('[data-lang-key]').forEach(element => {
+                const key = element.getAttribute('data-lang-key');
+                if (lang[key]) {
+                    element.textContent = lang[key];
+                }
+            });
+
+            // Update specific elements not covered by data-lang-key
+            darkModeLabel.textContent = document.body.classList.contains('dark-mode') ? lang.darkModeOn : lang.lightModeOn;
+            authTitle.textContent = isSignUpMode ? lang.signupTitle : lang.loginTitle;
+            authSubmitBtn.textContent = isSignUpMode ? lang.signupButton : lang.loginButton;
+            authSwitchText.textContent = isSignUpMode ? lang.authSwitchTextSignup : lang.authSwitchTextLogin;
+            authSwitchLink.textContent = isSignUpMode ? lang.authSwitchLinkSignup : lang.authSwitchLinkLogin;
+            logoutButton.textContent = lang.logoutButton;
+            startTourBtn.textContent = lang.startTour;
+            tutorialSkipBtn.textContent = lang.tutorialSkip;
+            tutorialPrevBtn.textContent = lang.tutorialPrev;
+            tutorialNextBtn.textContent = lang.tutorialNext;
+
+            // Corrected line: Directly set textContent on currentUserDisplay
+            if (currentUserDisplay) {
+                currentUserDisplay.textContent = userId ? userId : lang.userIdDisplay + ' ' + (auth.currentUser?.uid || 'N/A');
+            } else {
+                console.error("currentUserDisplay element not found in applyLanguage.");
+            }
+            // Update map error message if visible
+            if (mapErrorMessage && mapErrorMessage.style.display !== 'none') {
+                 mapErrorMessage.textContent = lang.mapApiError;
+            }
+        }
+
+        /**
+         * Toggles dark mode.
+         */
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isDarkMode ? 'enabled' : 'disabled');
+            darkModeLabel.textContent = isDarkMode ? translations[currentLanguage].darkModeOn : translations[currentLanguage].lightModeOn;
+        }
+
+        /**
+         * Displays the appropriate content based on authentication state.
+         * @param {boolean} isAuthenticated - True if user is authenticated, false otherwise.
+         */
+        function showContent(isAuthenticated) {
+            if (isAuthenticated) {
+                authSection.classList.add('hidden');
+                appContent.classList.remove('hidden');
+                logoutButton.classList.remove('hidden');
+                // Corrected line: Directly set textContent on currentUserDisplay
+                if (currentUserDisplay) {
+                    currentUserDisplay.textContent = userId;
+                } else {
+                    console.error("currentUserDisplay element not found in showContent (isAuthenticated).");
+                }
+                // Fetch data after auth is ready
+                if (isAuthReady) {
+                    fetchDisasterAlerts();
+                    loadGoogleMaps();
+                    loadTrustedContacts();
+                    fetchWeatherDataAndApplyTheme(); // Fetch weather for dynamic theming
+                }
+            } else {
+                authSection.classList.remove('hidden');
+                appContent.classList.add('hidden');
+                logoutButton.classList.add('hidden');
+                // Corrected line: Directly set textContent on currentUserDisplay
+                if (currentUserDisplay) {
+                    currentUserDisplay.textContent = translations[currentLanguage].userIdDisplay + ' ' + (auth.currentUser?.uid || 'N/A');
+                } else {
+                    console.error("currentUserDisplay element not found in showContent (not authenticated).");
+                }
+            }
+            hideLoading();
+        }
+
+        /**
+         * Displays the error page.
+         */
+        function showCustomErrorPage() {
+            appContent.classList.add('hidden');
+            authSection.classList.add('hidden');
+            errorPage.classList.remove('hidden');
+            hideLoading();
+        }
+
+        // --- Firebase Authentication ---
+        async function initializeFirebase() {
+            try {
+                if (Object.keys(firebaseConfig).length === 0) {
+                    throw new Error("Firebase configuration is missing. Please ensure __firebase_config is provided.");
+                }
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                // Listen for authentication state changes
+                onAuthStateChanged(auth, async (user) => {
+                    if (!isAuthReady) { // Only run once on initial load
+                        isAuthReady = true;
+                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                            try {
+                                await signInWithCustomToken(auth, __initial_auth_token);
+                                userId = auth.currentUser.uid;
+                                showContent(true);
+                            } catch (error) {
+                                console.error("Error signing in with custom token:", error);
+                                showMessageBox(translations[currentLanguage].authError, 'error');
+                                // Fallback to anonymous or regular sign-in if custom token fails
+                                await signInAnonymously(auth);
+                                userId = auth.currentUser.uid;
+                                showContent(true); // Still show content, but user might not be able to save data
+                            }
+                        } else if (user) {
+                            userId = user.uid;
+                            showContent(true);
+                        } else {
+                            // If no custom token and no existing user, sign in anonymously
+                            await signInAnonymously(auth);
+                            userId = auth.currentUser.uid;
+                            showContent(true); // Show content for anonymous user
+                        }
+                    } else { // Subsequent state changes (e.g., logout)
+                        if (user) {
+                            userId = user.uid;
+                            showContent(true);
+                        } else {
+                            userId = null;
+                            showContent(false);
+                        }
+                    }
+                    applyLanguage(); // Update UI after auth state is determined
+                });
+            } catch (error) {
+                console.error("Firebase initialization error:", error);
+                showCustomErrorPage();
+            }
+        }
+
+        async function handleAuthForm(event) {
+            event.preventDefault();
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
+
+            let isValid = true;
+
+            // Basic client-side validation
+            emailError.classList.add('hidden');
+            passwordError.classList.add('hidden');
+
+            if (!email) {
+                emailError.textContent = translations[currentLanguage].emailRequired;
+                emailError.classList.remove('hidden');
+                isValid = false;
+            } else if (!/\S+@\S+\.\S+/.test(email)) {
+                emailError.textContent = translations[currentLanguage].emailInvalid;
+                emailError.classList.remove('hidden');
+                isValid = false;
+            }
+
+            if (!password) {
+                passwordError.textContent = translations[currentLanguage].passwordRequired;
+                passwordError.classList.remove('hidden');
+                isValid = false;
+            } else if (password.length < 6) {
+                passwordError.textContent = translations[currentLanguage].passwordMinLength;
+                passwordError.classList.remove('hidden');
+                isValid = false;
+            }
+
+            if (!isValid) return;
+
+            showLoading(isSignUpMode ? "Signing up..." : "Logging in...");
+
+            try {
+                if (isSignUpMode) {
+                    await createUserWithEmailAndPassword(auth, email, password);
+                    showMessageBox(translations[currentLanguage].authSignupSuccess, 'success');
+                    // Automatically switch to login mode after signup
+                    isSignUpMode = false;
+                    updateAuthUI();
+                } else {
+                    await signInWithEmailAndPassword(auth, email, password);
+                    showMessageBox(translations[currentLanguage].authLoginSuccess, 'success');
+                }
+                // Auth state change listener will handle showing content
+            } catch (error) {
+                console.error("Auth error:", error);
+                showMessageBox(translations[currentLanguage].authError, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function handleLogout() {
+            try {
+                await signOut(auth);
+                showMessageBox(translations[currentLanguage].authLogoutSuccess, 'info');
+            } catch (error) {
+                console.error("Logout error:", error);
+                showMessageBox("Failed to logout.", 'error');
+            }
+        }
+
+        function updateAuthUI() {
+            authTitle.textContent = isSignUpMode ? translations[currentLanguage].signupTitle : translations[currentLanguage].loginTitle;
+            authSubmitBtn.textContent = isSignUpMode ? translations[currentLanguage].signupButton : translations[currentLanguage].loginButton;
+            authSwitchText.textContent = isSignUpMode ? translations[currentLanguage].authSwitchTextSignup : translations[currentLanguage].authSwitchTextLogin;
+            authSwitchLink.textContent = isSignUpMode ? translations[currentLanguage].authSwitchLinkSignup : translations[currentLanguage].authSwitchLinkLogin;
+            emailInput.value = '';
+            passwordInput.value = '';
+            emailError.classList.add('hidden');
+            passwordError.classList.add('hidden');
+        }
+
+        // --- Disaster Alerts (Simulated) ---
+        async function fetchDisasterAlerts() {
+            showLoading(translations[currentLanguage].loadingAlerts);
+            alertsList.innerHTML = ''; // Clear previous alerts
+
+            // Simulate fetching data from a disaster API
+            // In a real app, this would be a fetch() call to a public API like USGS Earthquake API, NOAA, etc.
+            // Example: https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.geojson
+            // For a hackathon, we'll use mock data.
+            const mockAlerts = [
+                {
+                    id: 'eq-1',
+                    type: 'Earthquake',
+                    magnitude: 5.2,
+                    location: '15km NW of XYZ City',
+                    time: new Date(Date.now() - 30 * 60 * 1000).toLocaleString(), // 30 mins ago
+                    description: 'Moderate earthquake detected. Minor damage possible.',
+                    coords: { lat: 23.2599, lng: 77.4126 } // Bhopal coords for demo
+                },
+                {
+                    id: 'flood-1',
+                    type: 'Flood Warning',
+                    magnitude: 'Severe',
+                    location: 'Riverside Area',
+                    time: new Date(Date.now() - 60 * 60 * 1000).toLocaleString(), // 1 hour ago
+                    description: 'Flash flood warning issued for low-lying areas. Seek higher ground.',
+                    coords: { lat: 23.2650, lng: 77.4200 }
+                },
+                {
+                    id: 'fire-1',
+                    type: 'Wildfire Alert',
+                    magnitude: 'High',
+                    location: 'Forest outskirts, North',
+                    time: new Date(Date.now() - 2 * 60 * 60 * 1000).toLocaleString(), // 2 hours ago
+                    description: 'Large wildfire spreading rapidly. Evacuate if in affected zones.',
+                    coords: { lat: 23.2700, lng: 77.4000 }
+                }
+            ];
+
+            setTimeout(() => { // Simulate network delay
+                mockAlerts.forEach(alert => {
+                    const alertCard = document.createElement('div');
+                    alertCard.className = 'alert-card';
+                    alertCard.innerHTML = `
+                        <h3>${alert.type}</h3>
+                        <p><strong>Magnitude/Severity:</strong> ${alert.magnitude}</p>
+                        <p><strong>Location:</strong> ${alert.location}</p>
+                        <p><strong>Description:</strong> ${alert.description}</p>
+                        <p class="alert-time">Reported: ${alert.time}</p>
+                    `;
+                    alertsList.appendChild(alertCard);
+                });
+                hideLoading();
+            }, 1500);
+        }
+
+        // --- Google Maps Integration ---
         let map;
+        let userMarker;
         let directionsService;
         let directionsRenderer;
 
-        
-        async function fetchDisasterAlerts() {
-            const alertBtn = document.getElementById('alert-btn-text');
-            const loading = document.getElementById('alert-loading');
-            const container = document.getElementById('alerts-container');
-            
-            alertBtn.style.display = 'none';
-            loading.style.display = 'inline-block';
-            
-            try {
-                
-                const response = await fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson');
-                const data = await response.json();
-                
-                container.innerHTML = '';
-                
-                
-                data.features.slice(0, 5).forEach(quake => {
-                    const alertDiv = document.createElement('div');
-                    alertDiv.className = 'alert-item earthquake';
-                    
-                    const magnitude = quake.properties.mag;
-                    const location = quake.properties.place;
-                    const time = new Date(quake.properties.time).toLocaleString();
-                    
-                    alertDiv.innerHTML = `
-                        <div class="alert-severity">Magnitude ${magnitude.toFixed(1)} Earthquake</div>
-                        <div>${location}</div>
-                        <div class="alert-location">${time}</div>
-                    `;
-                    
-                    container.appendChild(alertDiv);
-                });
-                
-                
-                mockDisasterData.forEach(alert => {
-                    const alertDiv = document.createElement('div');
-                    alertDiv.className = `alert-item ${alert.type}`;
-                    
-                    alertDiv.innerHTML = `
-                        <div class="alert-severity">${alert.severity} ${alert.type}</div>
-                        <div>${alert.location}</div>
-                        <div class="alert-location">${alert.time}</div>
-                    `;
-                    
-                    container.appendChild(alertDiv);
-                });
-                
-            } catch (error) {
-                container.innerHTML = '<div class="alert-item">Error loading alerts. Using demo data.</div>';
-                
-                
-                mockDisasterData.forEach(alert => {
-                    const alertDiv = document.createElement('div');
-                    alertDiv.className = `alert-item ${alert.type}`;
-                    
-                    alertDiv.innerHTML = `
-                        <div class="alert-severity">${alert.severity} ${alert.type}</div>
-                        <div>${alert.location}</div>
-                        <div class="alert-location">${alert.time}</div>
-                    `;
-                    
-                    container.appendChild(alertDiv);
-                });
+        function loadGoogleMaps() {
+            showLoading(translations[currentLanguage].loadingMap);
+
+            // IMPORTANT: Replace 'REPLACE_WITH_YOUR_ACTUAL_GOOGLE_MAPS_API_KEY' with your actual Google Maps API key.
+            // Ensure the Maps JavaScript API is enabled for this key in your Google Cloud project.
+            // You can check and enable it here: https://console.cloud.google.com/apis/library/maps-platform-apis
+            const GOOGLE_MAPS_API_KEY = 'AIzaSyBy3rkdHLTh-WOR2x18SpzVHjw9w4w-FaM'; // Updated API Key
+
+            if (!GOOGLE_MAPS_API_KEY || GOOGLE_MAPS_API_KEY === 'REPLACE_WITH_YOUR_ACTUAL_GOOGLE_MAPS_API_KEY') {
+                console.error("Google Maps API key is not set or is a placeholder. Map functionality will be limited.");
+                mapErrorMessage.textContent = translations[currentLanguage].mapApiError;
+                mapErrorMessage.style.display = 'block';
+                hideLoading();
+                return;
+            } else {
+                mapErrorMessage.style.display = 'none'; // Hide error message if key is present
             }
-            
-            alertBtn.style.display = 'inline';
-            loading.style.display = 'none';
-        }
 
-        
-        function initMap() {
-            const mapBtn = document.getElementById('map-btn-text');
-            const loading = document.getElementById('map-loading');
-            
-            mapBtn.style.display = 'none';
-            loading.style.display = 'inline-block';
-            
-            
-            setTimeout(() => {
-                const mapContainer = document.getElementById('map');
-                
-                
-                mapContainer.innerHTML = `
-                    <div style="
-                        height: 100%;
-                        background: linear-gradient(45deg, #4CAF50, #45a049);
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        color: white;
-                        font-size: 1.2rem;
-                        text-align: center;
-                        flex-direction: column;
-                    ">
-                        <div>🗺️ Safe Route Map</div>
-                        <div style="font-size: 0.9rem; margin-top: 10px;">
-                            Interactive map showing safe evacuation routes<br>
-                            (Requires Google Maps API key for full functionality)
-                        </div>
-                    </div>
-                `;
-                
-                mapBtn.style.display = 'inline';
-                loading.style.display = 'none';
-            }, 2000);
-        }
-
-        
-        async function sendEmergencySMS() {
-            const contact1 = document.getElementById('contact1').value;
-            const contact2 = document.getElementById('contact2').value;
-            const userName = document.getElementById('user-name').value;
-            const statusDiv = document.getElementById('sms-status');
-            
-            if (!contact1 && !contact2) {
-                statusDiv.innerHTML = '<div class="status error">Please add at least one emergency contact!</div>';
+            // Prevent script from being loaded multiple times
+            if (isMapScriptLoaded) {
+                console.log("Google Maps script already initiated loading.");
+                if (window.google && window.google.maps) {
+                    initializeMap(); // Call initializeMap directly if API is already loaded
+                } else {
+                    // If script was added but not yet loaded, wait for the callback
+                    console.log("Google Maps script still loading, waiting for callback.");
+                }
+                hideLoading();
                 return;
             }
-            
-            statusDiv.innerHTML = '<div class="status">Sending emergency alerts... <div class="loading"></div></div>';
-            
-            
+
+            const script = document.createElement('script');
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&callback=initializeMap`;
+            script.async = true;
+            script.defer = true;
+            document.head.appendChild(script);
+            isMapScriptLoaded = true; // Set flag to true after appending script
+
+            script.onerror = () => {
+                console.error("Failed to load Google Maps script. Check your API key and network connection.");
+                showMessageBox("Failed to load Google Maps. Check your API key and network.", 'error', 5000);
+                mapErrorMessage.textContent = "Failed to load Google Maps script. Check your network and console for details.";
+                mapErrorMessage.style.display = 'block';
+                hideLoading();
+            };
+        }
+
+        // Global callback for Google Maps API authentication failures
+        window.gm_authFailure = function() {
+            console.error("Google Maps API authentication failed. Check your API key and its restrictions.");
+            mapErrorMessage.textContent = translations[currentLanguage].mapApiError;
+            mapErrorMessage.style.display = 'block';
+            hideLoading();
+        };
+
+        window.initializeMap = function() {
+            console.log("initializeMap callback triggered.");
+            mapErrorMessage.style.display = 'none'; // Hide any previous API key errors once callback fires
+
+            // Check if google.maps is defined before proceeding
+            if (typeof google === 'undefined' || typeof google.maps === 'undefined') {
+                console.error("Google Maps API is not fully loaded when initializeMap is called.");
+                mapErrorMessage.textContent = translations[currentLanguage].mapApiError; // Use translated error message
+                mapErrorMessage.style.display = 'block';
+                hideLoading();
+                return;
+            }
+
+            if (!navigator.geolocation) {
+                showMessageBox("Geolocation is not supported by your browser. Map will center on a default location.", 'info');
+                initializeMapWithCoords({ lat: 23.2599, lng: 77.4126 }); // Default to Bhopal
+                return;
+            }
+
+            try {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        console.log("Geolocation successful:", position.coords);
+                        const userCoords = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+                        initializeMapWithCoords(userCoords);
+                    },
+                    (error) => {
+                        console.error("Error getting user location:", error.code, error.message || error); // Log the error code and message
+                        // The error object might contain a code (e.g., 1 for permission denied)
+                        let errorMessage = "Could not get your location. Map will center on a default location.";
+                        if (error.code === error.PERMISSION_DENIED) {
+                            errorMessage = "Location access denied. Please enable location services for this site.";
+                        } else if (error.code === error.POSITION_UNAVAILABLE) {
+                            errorMessage = "Location information unavailable. Check your device settings.";
+                        } else if (error.code === error.TIMEOUT) {
+                            errorMessage = "Location request timed out. Try again.";
+                        }
+                        showMessageBox(errorMessage, 'error');
+                        initializeMapWithCoords({ lat: 23.2599, lng: 77.4126 }); // Default to Bhopal
+                    },
+                    {
+                        enableHighAccuracy: true, // Request high accuracy
+                        timeout: 10000,           // 10 seconds timeout
+                        maximumAge: 0             // No cached position
+                    }
+                );
+            } catch (e) {
+                console.error("Geolocation API call failed:", e);
+                showMessageBox("Geolocation API call failed. Please ensure your browser supports and allows location services.", 'error');
+                initializeMapWithCoords({ lat: 23.2599, lng: 77.4126 }); // Fallback
+            }
+        };
+
+        function initializeMapWithCoords(coords) {
+            const mapElement = document.getElementById('map');
+            if (!mapElement) {
+                console.error("Map element not found.");
+                hideLoading();
+                return;
+            }
+
+            // Clear previous content in map div, in case an error message was displayed
+            mapElement.innerHTML = '';
+
+            // Check if google.maps is defined before proceeding
+            if (typeof google === 'undefined' || typeof google.maps === 'undefined') {
+                console.error("Google Maps API is not fully loaded when initializeMapWithCoords is called.");
+                mapErrorMessage.textContent = translations[currentLanguage].mapApiError; // Use translated error message
+                mapErrorMessage.style.display = 'block';
+                hideLoading();
+                return;
+            }
+
+            map = new google.maps.Map(mapElement, {
+                center: coords,
+                zoom: 12,
+                mapTypeId: google.maps.MapTypeId.ROADMAP,
+                fullscreenControl: false, // Hide fullscreen control
+                mapTypeControl: false,    // Hide map type control
+                streetViewControl: false, // Hide street view control
+            });
+
+            userMarker = new google.maps.Marker({
+                position: coords,
+                map: map,
+                title: 'Your Location',
+                icon: {
+                    url: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png', // Blue dot for user
+                    scaledSize: new google.maps.Size(40, 40)
+                }
+            });
+
+            directionsService = new google.maps.DirectionsService();
+            directionsRenderer = new google.maps.DirectionsRenderer({ map: map, suppressMarkers: true });
+
+            // Simulate danger zones (e.g., from disaster alerts)
+            const dangerZones = [
+                { lat: 23.2650, lng: 77.4200, name: 'Flood Zone' },
+                { lat: 23.2700, lng: 77.4000, name: 'Wildfire Area' }
+            ];
+
+            dangerZones.forEach(zone => {
+                new google.maps.Marker({
+                    position: zone,
+                    map: map,
+                    title: zone.name,
+                    icon: {
+                        url: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png', // Red dot for danger
+                        scaledSize: new google.maps.Size(40, 40)
+                    }
+                });
+            });
+
+            // Simulate a safe route (e.g., from user to a safe point, avoiding danger zones)
+            // This would be more complex with real-time disaster data and routing algorithms.
+            // For demo, we'll just show a route.
+            const origin = coords;
+            const destination = { lat: 23.2300, lng: 77.3800 }; // A 'safe' point south-west of Bhopal
+
+            const request = {
+                origin: origin,
+                destination: destination,
+                travelMode: google.maps.TravelMode.DRIVING,
+                avoidHighways: false, // Could be true to avoid dangerous roads
+                avoidTolls: false
+            };
+
+            directionsService.route(request, (result, status) => {
+                if (status === google.maps.DirectionsStatus.OK) {
+                    directionsRenderer.setDirections(result);
+                    // Add markers for origin and destination of the route
+                    new google.maps.Marker({
+                        position: origin,
+                        map: map,
+                        title: 'Route Start',
+                        icon: {
+                            url: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png',
+                            scaledSize: new google.maps.Size(40, 40)
+                        }
+                    });
+                    new google.maps.Marker({
+                        position: destination,
+                        map: map,
+                        title: 'Safe Zone',
+                        icon: {
+                            url: 'http://maps.google.com/mapfiles/ms/icons/yellow-dot.png',
+                            scaledSize: new google.maps.Size(40, 40)
+                        }
+                    });
+                } else {
+                    console.error('Directions request failed due to ' + status);
+                    showMessageBox('Could not find a safe route. Please check your location.', 'error');
+                }
+            });
+            hideLoading();
+        }
+
+        // --- OpenWeatherMap Integration for Dynamic Theming ---
+        // IMPORTANT: Replace 'YOUR_OPENWEATHER_API_KEY' with your actual OpenWeatherMap API key.
+        // Get your API key from https://openweathermap.org/api
+        const OPENWEATHER_API_KEY = 'YOUR_OPENWEATHER_API_KEY';
+
+        async function fetchWeatherDataAndApplyTheme() {
+            if (OPENWEATHER_API_KEY === 'YOUR_OPENWEATHER_API_KEY' || !OPENWEATHER_API_KEY) {
+                console.warn("OpenWeatherMap API key is not set. Dynamic theming will not work.");
+                return;
+            }
+
+            let lat = 23.2599; // Default to Bhopal
+            let lon = 77.4126;
+
+            try {
+                const position = await new Promise((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
+                });
+                lat = position.coords.latitude;
+                lon = position.coords.longitude;
+                console.log("Weather geolocation successful:", lat, lon);
+            } catch (error) {
+                console.warn("Could not get user location for weather. Using default coordinates.", error.message || error);
+            }
+
+            const weatherApiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${OPENWEATHER_API_KEY}&units=metric`;
+
+            try {
+                const response = await fetch(weatherApiUrl);
+                if (!response.ok) {
+                    throw new Error(`Weather API error: ${response.statusText}`);
+                }
+                const data = await response.json();
+                console.log("Weather data:", data);
+                applyThemeBasedOnWeather(data);
+            } catch (error) {
+                console.error("Failed to fetch weather data:", error);
+                showMessageBox("Failed to get weather data for dynamic theming.", 'error');
+            }
+        }
+
+        function applyThemeBasedOnWeather(weatherData) {
+            const weatherCondition = weatherData.weather[0].main.toLowerCase(); // e.g., "clouds", "clear", "rain"
+            const body = document.body;
+
+            // Simple logic: Dark mode for cloudy/rainy/snowy, light for clear
+            if (weatherCondition.includes('cloud') || weatherCondition.includes('rain') || weatherCondition.includes('snow') || weatherCondition.includes('thunderstorm') || weatherCondition.includes('drizzle')) {
+                if (!body.classList.contains('dark-mode')) {
+                    body.classList.add('dark-mode');
+                    darkModeToggle.checked = true;
+                }
+            } else {
+                if (body.classList.contains('dark-mode')) {
+                    body.classList.remove('dark-mode');
+                    darkModeToggle.checked = false;
+                }
+            }
+            darkModeLabel.textContent = body.classList.contains('dark-mode') ? translations[currentLanguage].darkModeOn : translations[currentLanguage].lightModeOn;
+        }
+
+        // --- Twilio SMS (Simulated) ---
+        async function sendSOS() {
+            if (!userId) {
+                showMessageBox("Please log in to send SOS.", 'info');
+                return;
+            }
+            showLoading("Sending SOS...");
+
+            // In a real application, this would be a fetch request to your Node.js/Express backend:
+            // fetch('/api/send-sos', {
+            //     method: 'POST',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify({ userId: userId, location: 'User Location Data' })
+            // })
+            // .then(response => response.json())
+            // .then(data => {
+            //     if (data.success) {
+            //         showMessageBox(translations[currentLanguage].alertSuccess, 'success');
+            //     } else {
+            //         showMessageBox(translations[currentLanguage].alertError, 'error');
+            //     }
+            // })
+            // .catch(error => {
+            //     console.error("SOS send error:", error);
+            //     showMessageBox(translations[currentLanguage].alertError, 'error');
+            // })
+            // .finally(() => hideLoading());
+
+            // For this prototype, simulate success after a delay
             setTimeout(() => {
-                const message = `🚨 EMERGENCY ALERT from ${userName}: I need immediate assistance! This is an automated message from Disaster Shield. Please check on me or contact emergency services. Current time: ${new Date().toLocaleString()}`;
-                
-                let sentCount = 0;
-                if (contact1) sentCount++;
-                if (contact2) sentCount++;
-                
-                statusDiv.innerHTML = `
-                    <div class="status success">
-                        ✅ Emergency alert sent to ${sentCount} contact(s)!<br>
-                        Message: "${message.substring(0, 100)}..."<br>
-                        <small>In production, this would use Twilio SMS API</small>
-                    </div>
-                `;
-                
-               
-                setTimeout(() => {
-                    statusDiv.innerHTML = '';
-                }, 10000);
-                
+                showMessageBox(translations[currentLanguage].alertSuccess, 'success');
+                hideLoading();
             }, 2000);
         }
 
-        
-        window.onload = function() {
-            fetchDisasterAlerts();
-        };
+        // --- Trusted Contacts (Firestore) ---
+        async function addTrustedContact(event) {
+            event.preventDefault();
+
+            if (!userId) {
+                showMessageBox("Please log in to add contacts.", 'info');
+                return;
+            }
+
+            const name = contactNameInput.value.trim();
+            const phone = contactPhoneInput.value.trim();
+
+            let isValid = true;
+            contactNameError.classList.add('hidden');
+            contactPhoneError.classList.add('hidden');
+
+            if (!name) {
+                contactNameError.textContent = translations[currentLanguage].contactNameRequired;
+                contactNameError.classList.remove('hidden');
+                isValid = false;
+            }
+            if (!phone) {
+                contactPhoneError.textContent = translations[currentLanguage].contactPhoneRequired;
+                contactPhoneError.classList.remove('hidden');
+                isValid = false;
+            } else if (!/^\+\d{1,15}$/.test(phone)) {
+                contactPhoneError.textContent = translations[currentLanguage].contactPhoneInvalid;
+                contactPhoneError.classList.remove('hidden');
+                isValid = false;
+            }
+
+            if (!isValid) return;
+
+            showLoading("Adding contact...");
+            try {
+                // Store in private user collection
+                const contactsColRef = collection(db, `artifacts/${appId}/users/${userId}/contacts`);
+                await addDoc(contactsColRef, {
+                    name: name,
+                    phone: phone,
+                    createdAt: new Date()
+                });
+                showMessageBox(translations[currentLanguage].contactAdded, 'success');
+                contactNameInput.value = '';
+                contactPhoneInput.value = '';
+            } catch (error) {
+                console.error("Error adding contact:", error);
+                showMessageBox(translations[currentLanguage].contactAddError, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function deleteTrustedContact(contactId) {
+            if (!userId) {
+                showMessageBox("Please log in to delete contacts.", 'info');
+                return;
+            }
+            showLoading("Removing contact...");
+            try {
+                const contactDocRef = doc(db, `artifacts/${appId}/users/${userId}/contacts`, contactId);
+                await deleteDoc(contactDocRef);
+                showMessageBox(translations[currentLanguage].contactRemoved, 'info');
+            } catch (error) {
+                console.error("Error deleting contact:", error);
+                showMessageBox(translations[currentLanguage].contactRemoveError, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function loadTrustedContacts() {
+            if (!userId) {
+                contactsList.innerHTML = `<p>${translations[currentLanguage].contactsDescription}</p>`;
+                return;
+            }
+
+            showLoading(translations[currentLanguage].loadingContacts);
+            const contactsColRef = collection(db, `artifacts/${appId}/users/${userId}/contacts`);
+
+            onSnapshot(contactsColRef, (snapshot) => {
+                contactsList.innerHTML = ''; // Clear existing contacts
+                if (snapshot.empty) {
+                    contactsList.innerHTML = `<p>${translations[currentLanguage].contactsDescription}</p>`;
+                } else {
+                    snapshot.forEach(doc => {
+                        const contact = doc.data();
+                        const contactCard = document.createElement('div');
+                        contactCard.className = 'contact-card';
+                        contactCard.innerHTML = `
+                            <p><strong>${contact.name}</strong>: ${contact.phone}</p>
+                            <button data-id="${doc.id}">Delete</button>
+                        `;
+                        contactCard.querySelector('button').addEventListener('click', () => deleteTrustedContact(doc.id));
+                        contactsList.appendChild(contactCard);
+                    });
+                }
+                hideLoading();
+            }, (error) => {
+                console.error("Error fetching contacts:", error);
+                showMessageBox("Failed to load contacts.", 'error');
+                hideLoading();
+            });
+        }
+
+        // --- Tutorial/Story Mode ---
+        let currentTutorialStepIndex = -1;
+        const tutorialSteps = [
+            {
+                id: null, // No specific element to highlight for welcome
+                character: '👋',
+                messageKey: 'tutorialWelcome'
+            },
+            {
+                id: 'alert-section',
+                character: '🚨',
+                messageKey: 'tutorialAlerts'
+            },
+            {
+                id: 'map-section',
+                character: '🗺️',
+                messageKey: 'tutorialMap'
+            },
+            {
+                id: 'sos-section',
+                character: '🆘',
+                messageKey: 'tutorialSOS'
+            },
+            {
+                id: 'contacts-section',
+                character: '📞',
+                messageKey: 'tutorialContacts'
+            },
+            {
+                id: null, // No specific element for end
+                character: '✅',
+                messageKey: 'tutorialEnd'
+            }
+        ];
+
+        function startTutorial() {
+            currentTutorialStepIndex = 0;
+            tutorialOverlay.classList.remove('hidden');
+            tutorialOverlay.classList.add('show');
+            showTutorialStep(currentTutorialStepIndex);
+        }
+
+        function showTutorialStep(index) {
+            if (index < 0 || index >= tutorialSteps.length) {
+                endTutorial();
+                return;
+            }
+
+            // Remove highlight from previous element
+            if (currentTutorialStepIndex > -1 && tutorialSteps[currentTutorialStepIndex].id) {
+                const prevElement = document.getElementById(tutorialSteps[currentTutorialStepIndex].id);
+                if (prevElement) {
+                    prevElement.classList.remove('tutorial-highlight');
+                }
+            }
+
+            currentTutorialStepIndex = index;
+            const step = tutorialSteps[currentTutorialStepIndex];
+            const lang = translations[currentLanguage];
+
+            tutorialCharacter.textContent = step.character;
+            tutorialMessage.textContent = lang[step.messageKey];
+
+            // Update button visibility
+            tutorialPrevBtn.style.display = currentTutorialStepIndex === 0 ? 'none' : 'inline-flex';
+            tutorialNextBtn.style.display = currentTutorialStepIndex === tutorialSteps.length - 1 ? 'none' : 'inline-flex';
+            tutorialSkipBtn.textContent = currentTutorialStepIndex === tutorialSteps.length - 1 ? lang.tutorialSkip : lang.tutorialSkip; // Always show Skip
+
+            // Highlight current element and scroll into view
+            if (step.id) {
+                const targetElement = document.getElementById(step.id);
+                if (targetElement) {
+                    targetElement.classList.add('tutorial-highlight');
+                    targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        }
+
+        function nextTutorialStep() {
+            if (currentTutorialStepIndex < tutorialSteps.length - 1) {
+                showTutorialStep(currentTutorialStepIndex + 1);
+            } else {
+                endTutorial();
+            }
+        }
+
+        function prevTutorialStep() {
+            if (currentTutorialStepIndex > 0) {
+                showTutorialStep(currentTutorialStepIndex - 1);
+            }
+        }
+
+        function endTutorial() {
+            tutorialOverlay.classList.remove('show');
+            tutorialOverlay.classList.add('hidden');
+            // Remove any lingering highlight
+            if (currentTutorialStepIndex > -1 && tutorialSteps[currentTutorialStepIndex].id) {
+                const prevElement = document.getElementById(tutorialSteps[currentTutorialStepIndex].id);
+                if (prevElement) {
+                    prevElement.classList.remove('tutorial-highlight');
+                }
+            }
+            currentTutorialStepIndex = -1; // Reset
+        }
+
+        // --- Event Listeners ---
+        document.addEventListener('DOMContentLoaded', () => {
+            showLoading(translations[currentLanguage].loadingApp);
+            initializeFirebase();
+
+            // Dark Mode
+            const savedDarkMode = localStorage.getItem('darkMode');
+            if (savedDarkMode === 'enabled') {
+                document.body.classList.add('dark-mode');
+                darkModeToggle.checked = true;
+            }
+            darkModeLabel.textContent = document.body.classList.contains('dark-mode') ? translations[currentLanguage].darkModeOn : translations[currentLanguage].lightModeOn;
+            darkModeToggle.addEventListener('change', toggleDarkMode);
+
+            // Language Switcher
+            languageSwitcher.value = currentLanguage; // Set initial selection
+            applyLanguage(); // Apply initial language
+            languageSwitcher.addEventListener('change', (event) => {
+                currentLanguage = event.target.value;
+                localStorage.setItem('shieldLang', currentLanguage);
+                applyLanguage();
+            });
+
+            // Auth Form Logic
+            authForm.addEventListener('submit', handleAuthForm);
+            authSwitchLink.addEventListener('click', (event) => {
+                event.preventDefault();
+                isSignUpMode = !isSignUpMode;
+                updateAuthUI();
+            });
+            logoutButton.addEventListener('click', handleLogout);
+
+            // Main App Buttons
+            refreshAlertsBtn.addEventListener('click', fetchDisasterAlerts);
+            sosButton.addEventListener('click', sendSOS);
+            addContactForm.addEventListener('submit', addTrustedContact);
+
+            // Tutorial Buttons
+            startTourBtn.addEventListener('click', startTutorial);
+            tutorialNextBtn.addEventListener('click', nextTutorialStep);
+            tutorialPrevBtn.addEventListener('click', prevTutorialStep);
+            tutorialSkipBtn.addEventListener('click', endTutorial);
+        });
+
+        // Ensure initializeMap is globally accessible for Google Maps callback
+        window.initializeMap = window.initializeMap || function() { console.log("Google Maps callback placeholder."); };
     </script>
 </body>
 </html>
