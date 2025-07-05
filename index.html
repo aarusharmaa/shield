@@ -604,7 +604,7 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.7);
-            z-index: 99999; /* HIGHEST Z-INDEX for the overlay */
+            z-index: 9999; /* Increased z-index */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -626,7 +626,7 @@
             text-align: center;
             position: relative;
             animation: slideIn 0.5s ease-out;
-            z-index: 100000; /* HIGHER THAN OVERLAY for the card itself */
+            z-index: 10000; /* Increased z-index */
         }
         @keyframes slideIn {
             from { transform: translateY(50px); opacity: 0; }
@@ -648,7 +648,7 @@
         }
         .tutorial-highlight {
             position: relative;
-            z-index: 100001; /* HIGHEST Z-INDEX for the highlighted element */
+            z-index: 10001; /* Increased z-index */
             box-shadow: 0 0 0 5px var(--secondary-color), 0 0 15px var(--secondary-color);
             transition: box-shadow 0.3s ease;
             border-radius: 12px;
@@ -728,17 +728,16 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        /* This blocker is no longer needed with proper z-index on tutorial-overlay */
-        /* #map-click-blocker {
+        #map-click-blocker {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             background-color: transparent;
-            z-index: 9998;
-            display: none;
-        } */
+            z-index: 9998; /* Just below tutorial-overlay (9999) */
+            display: none; /* Hidden by default */
+        }
     </style>
 </head>
 <body>
@@ -761,7 +760,7 @@
             </div>
         </div>
     </div>
-    <!-- The map-click-blocker is removed as the z-index on tutorial-overlay now handles blocking clicks -->
+    <div id="map-click-blocker" class="hidden"></div> <!-- Map click blocker -->
     <header>
         <div class="logo">
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -1187,58 +1186,7 @@
             errorPage.classList.remove('hidden');
             hideLoading();
         }
-    
-        async function initializeFirebase() {
-            try {
-                const firebaseConfig = {
-                    apiKey: "YOUR_FIREBASE_API_KEY",
-                    authDomain: "YOUR_FIREBASE_AUTH_DOMAIN",
-                    projectId: "YOUR_FIREBASE_PROJECT_ID",
-                    storageBucket: "YOUR_FIREBASE_STORAGE_BUCKET",
-                    messagingSenderId: "YOUR_FIREBASE_MESSAGING_SENDER_ID",
-                    appId: "YOUR_FIREBASE_APP_ID"
-                };
-                if (firebaseConfig.apiKey === "YOUR_FIREBASE_API_KEY") {
-                    console.warn("Firebase configuration is using placeholder values. Contact saving/loading and shared status will not work.");
-                    app = null; 
-                    db = null;  
-                    userId = 'anonymous_local_user';
-                    isAuthReady = true;
-                    showContent();
-                    return; 
-                }
-                app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-                onAuthStateChanged(auth, async (user) => {
-                    if (!isAuthReady) {
-                        isAuthReady = true;
-                        if (user) {
-                            userId = user.uid;
-                        } else {
-                            try {
-                                const anonUserCred = await signInAnonymously(auth);
-                                userId = anonUserCred.user.uid;
-                            } catch (anonError) {
-                                console.error("Error signing in anonymously:", anonError);
-                                showMessageBox("Failed to sign in anonymously. Shared features may not work.", 'error');
-                                userId = 'anonymous_error_user';
-                            }
-                        }
-                        console.log("Firebase (Firestore & Anonymous Auth) initialized. User ID:", userId);
-                        showContent();
-                    }
-                    applyLanguage();
-                });
-            } catch (error) {
-                console.error("Firebase initialization error:", error);
-                showMessageBox("Firebase initialization failed. Check console for details. Some features disabled.", 'error');
-                showCustomErrorPage(); 
-                app = null;
-                db = null;
-                userId = 'initialization_error';
-            }
-        }
+        
         async function fetchDisasterAlerts() {
             showLoading(translations[currentLanguage].loadingAlerts);
             alertsList.innerHTML = '';
@@ -1777,48 +1725,39 @@
             if (sectionElement) {
                 const title = sectionElement.querySelector('h2 span[data-lang-key]').textContent;
                 const description = sectionElement.querySelector('p[data-lang-key]').textContent;
-                let contentToSpeak = `${title}. ${description}.`; // Add a period for better pause
-
+                let contentToSpeak = `${title}. ${description}`;
                 if (sectionId === 'alert-section') {
                     const alerts = sectionElement.querySelectorAll('.alert-card');
                     if (alerts.length > 0) {
                         contentToSpeak += " Current alerts include: ";
-                        alerts.forEach((alert) => {
+                        alerts.forEach((alert) => { // Iterate over all alerts
                             const type = alert.querySelector('h3').textContent;
-                            // Get the full text content of the p tags, then clean it up
-                            const magnitudeText = alert.querySelector('p:nth-of-type(1)').textContent.trim();
-                            const locationText = alert.querySelector('p:nth-of-type(2)').textContent.trim();
-                            const descriptionText = alert.querySelector('p:nth-of-type(3)').textContent.trim();
-                            contentToSpeak += `${type}. ${magnitudeText}. ${locationText}. ${descriptionText}. `;
+                            // Extract only the value after "Location:" and "Description:"
+                            const locationText = alert.querySelector('p:nth-of-type(2)').textContent.replace('Location:', '').trim();
+                            const descriptionText = alert.querySelector('p:nth-of-type(3)').textContent.replace('Description:', '').trim();
+                            contentToSpeak += `${type}. Location: ${locationText}. Description: ${descriptionText}. `;
                         });
-                    } else {
-                        contentToSpeak += " No active alerts at this time.";
                     }
                 }
                 else if (sectionId === 'contacts-section') {
                     const contacts = sectionElement.querySelectorAll('.contact-card p');
                     if (contacts.length > 0) {
                         contentToSpeak += " Your trusted contacts include: ";
-                        contacts.forEach((contact) => {
+                        contacts.forEach((contact) => { // Iterate over all contacts
                             contentToSpeak += `${contact.textContent}. `;
                         });
-                    } else {
-                        contentToSpeak += " You have no trusted contacts added yet.";
                     }
                 }
                 else if (sectionId === 'shared-status-section') {
                     const messages = sectionElement.querySelectorAll('.message-item');
                     if (messages.length > 0) {
                         contentToSpeak += " Recent messages: ";
-                        // Read only a few recent messages to avoid very long speech
-                        Array.from(messages).reverse().slice(0, 3).forEach((message) => { // Get last 3 messages
+                        messages.forEach((message) => { // Iterate over all messages
                             contentToSpeak += `${message.textContent}. `;
                         });
-                    } else {
-                        contentToSpeak += " No shared status updates yet.";
                     }
                 }
-                console.log("Attempting to speak:", contentToSpeak); // For debugging
+                console.log("Speaking:", contentToSpeak); // For debugging
                 speakText(contentToSpeak);
             }
         }
@@ -1864,8 +1803,7 @@
             currentTutorialStepIndex = 0;
             tutorialOverlay.classList.remove('hidden');
             tutorialOverlay.classList.add('show');
-            // The map-click-blocker is no longer needed as tutorial-overlay covers everything
-            // and has the highest z-index, blocking all clicks underneath.
+            document.getElementById('map-click-blocker').classList.remove('hidden'); // Show blocker
             showTutorialStep(currentTutorialStepIndex);
         }
         function showTutorialStep(index) {
@@ -1873,7 +1811,6 @@
                 endTutorial();
                 return;
             }
-            // Remove highlight from previous step if any
             if (currentTutorialStepIndex > -1 && tutorialSteps[currentTutorialStepIndex].id) {
                 const prevElement = document.getElementById(tutorialSteps[currentTutorialStepIndex].id);
                 if (prevElement) {
@@ -1911,7 +1848,7 @@
         function endTutorial() {
             tutorialOverlay.classList.remove('show');
             tutorialOverlay.classList.add('hidden');
-            // Ensure any active highlight is removed
+            document.getElementById('map-click-blocker').classList.add('hidden'); // Hide blocker
             if (currentTutorialStepIndex > -1 && tutorialSteps[currentTutorialStepIndex].id) {
                 const prevElement = document.getElementById(tutorialSteps[currentTutorialStepIndex].id);
                 if (prevElement) {
