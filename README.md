@@ -4,33 +4,33 @@ Shield is a comprehensive web application designed to empower individuals during
 1. Features Implemented
 Here's a breakdown of the key features implemented in Shield, along with their estimated difficulty levels:
 
-- Dark Mode Support (Easy)
+- Dark Mode Support (Easy):
 Applications that provide a dark mode, based on user preference.
 
-- Dynamic Theming Based on API Data:(Medium)
-Responsive design for seamless experience across desktop, tablet, and mobile devices.
-Clean, intuitive layout with distinct sections for different functionalities.
+- Dynamic Theming Based on API Data:(Medium):
+Responsive design for seamless experience across desktop, tablet, and mobile devices,
+Clean, intuitive layout with distinct sections for different functionalities,
 Dynamic theming (Light Mode, Dark Mode, High Contrast Mode).
 
--Multilingual Support (Medium)
-Supports English, Hindi, and Spanish for key UI texts.
+-Multilingual Support (Medium):
+Supports English, Hindi, and Spanish for key UI texts,
 Language switcher for easy toggling.
 
--The Story Mode (Medium)
-Guided tour explaining key features of the application.
+-The Story Mode (Medium):
+Guided tour explaining key features of the application,
 Highlights relevant sections during the tour.
 
--Voice Navigation and Accessibility Features (Hard)
-High Contrast Mode for improved visibility.
-Dark/Light Theme
+-Voice Navigation and Accessibility Features (Hard):
+High Contrast Mode for improved visibility,
+Dark/Light Theme,
+Text-to-Speech (TTS) for reading out section content,
+Voice Commands for hands-free interaction (e.g., "SOS", "Refresh Alerts", "Read Alerts").
+
+-Text-to-Speech for Content (Hard):
 Text-to-Speech (TTS) for reading out section content.
 Voice Commands for hands-free interaction (e.g., "SOS", "Refresh Alerts", "Read Alerts").
 
--Text-to-Speech for Content (Hard)
-Text-to-Speech (TTS) for reading out section content.
-Voice Commands for hands-free interaction (e.g., "SOS", "Refresh Alerts", "Read Alerts").
-
--Parallel Interaction Mode:
+-Parallel Interaction Mode (Hard):
 Applications that allow two users to interact within the app at the same time. This includes real-time shared input.
 
 
@@ -58,7 +58,7 @@ Displays real-time disaster alerts and the refresh button.
 
 
 Map Section with Safe Route
-Shows user location, danger zones, and a calculated safe route.
+Shows user location, danger zones, and a calculated safe route. The Blue Pin indicates your location, while Red Pin indicates Safe points.
 <img width="1440" alt="Screenshot 2025-07-05 at 9 15 56 PM" src="https://github.com/user-attachments/assets/e5a2d847-9db5-4670-b018-81528503289a" />
 
 
