@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shield: Your Safety Shield</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="./style.css" src="stylesheet">
     <style>
         :root {
             --background-color: #f0f2f5;
@@ -605,7 +604,7 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.7);
-            z-index: 2000;
+            z-index: 9999; /* Increased z-index */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -627,6 +626,7 @@
             text-align: center;
             position: relative;
             animation: slideIn 0.5s ease-out;
+            z-index: 10000; /* Increased z-index */
         }
         @keyframes slideIn {
             from { transform: translateY(50px); opacity: 0; }
@@ -648,7 +648,7 @@
         }
         .tutorial-highlight {
             position: relative;
-            z-index: 2001;
+            z-index: 10001; /* Increased z-index */
             box-shadow: 0 0 0 5px var(--secondary-color), 0 0 15px var(--secondary-color);
             transition: box-shadow 0.3s ease;
             border-radius: 12px;
@@ -687,12 +687,15 @@
             padding: 15px;
             background-color: var(--background-color);
             margin-bottom: 20px;
+            display: flex;
+            flex-direction: column; /* New messages appear at the bottom */
         }
         .message-item {
             padding: 10px;
             border-bottom: 1px dashed var(--border-color);
             word-wrap: break-word;
             font-size: 0.95em;
+            animation: fadeInMessage 0.5s ease-out forwards;
         }
         .message-item:last-child {
             border-bottom: none;
@@ -721,6 +724,20 @@
         .read-aloud-btn:hover {
             background-color: #3070d6;
         }
+        @keyframes fadeInMessage {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        #map-click-blocker {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: transparent;
+            z-index: 9998; /* Just below tutorial-overlay (9999) */
+            display: none; /* Hidden by default */
+        }
     </style>
 </head>
 <body>
@@ -743,6 +760,7 @@
             </div>
         </div>
     </div>
+    <div id="map-click-blocker" class="hidden"></div> <!-- Map click blocker -->
     <header>
         <div class="logo">
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -960,7 +978,7 @@
                 tutorialMap: "Here you can see your location and potential danger zones on the map. It helps you find safe routes.",
                 tutorialSOS: "In an emergency, just one click on this SOS button will notify your trusted contacts.",
                 tutorialContacts: "Manage your emergency contacts here. Add or remove people you want to alert during a crisis.",
-                tutorialEnd: "That's the basic tour! You're now ready to use Shield. Stay safe!",
+                tutorialEnd: "You are finished!",
                 sharedStatusTitle: "Shared Status Updates",
                 sharedStatusDescription: "Share real-time updates with other users (simulated multi-user interaction).",
                 sendMessageButton: "Send",
@@ -1023,7 +1041,7 @@
                 tutorialMap: "यहां आप मानचित्र पर अपना स्थान और संभावित खतरनाक क्षेत्र देख सकते हैं। यह आपको सुरक्षित मार्ग खोजने में मदद करता है।",
                 tutorialSOS: "आपातकाल में, इस एसओएस बटन पर सिर्फ एक क्लिक आपके विश्वसनीय संपर्कों को सूचित करेगा।",
                 tutorialContacts: "यहां अपने आपातकालीन संपर्कों को प्रबंधित करें। संकट के दौरान उन लोगों को जोड़ें या हटाएँ जिन्हें आप अलर्ट करना चाहते हैं।",
-                tutorialEnd: "यह बुनियादी टूर है! अब आप शील्ड का उपयोग करने के लिए तैयार हैं। सुरक्षित रहें!",
+                tutorialEnd: "आप समाप्त कर चुके हैं!",
                 sharedStatusTitle: "साझा स्थिति अपडेट",
                 sharedStatusDescription: "अन्य उपयोगकर्ताओं के साथ वास्तविक समय अपडेट साझा करें (सिम्युलेटेड मल्टी-यूजर इंटरैक्शन)।",
                 sendMessageButton: "भेजें",
@@ -1085,9 +1103,9 @@
                 tutorialMap: "Aquí puedes ver tu ubicación y posibles zonas de peligro en el mapa. Te ayuda a encontrar rutas seguras.",
                 tutorialSOS: "En caso de emergencia, un solo clic en este botón SOS notificará a tus contactos de confianza.",
                 tutorialContacts: "Gestiona tus contactos de emergencia aquí. Añade o elimina personas a las que quieras alertar durante una crisis.",
-                tutorialEnd: "¡Ese es el recorrido básico! Ahora estás listo para usar Shield. ¡Mantente a salvo!",
+                tutorialEnd: "You are finished!",
                 sharedStatusTitle: "Actualizaciones de Estado Compartidas",
-                sharedStatusDescription: "Comparte actualizaciones en tiempo real con otros usuarios (simulada multiusuario).",
+                sharedStatusDescription: "Comparta actualizaciones en tiempo real con otros usuarios (simulada multiusuario).",
                 sendMessageButton: "Enviar",
                 sharedStatusNote: "*Este es un feed público y compartido. La verdadera identificación multiusuario requiere cuentas de usuario.",
                 messageSent: "¡Mensaje enviado!",
@@ -1222,37 +1240,27 @@
         async function fetchDisasterAlerts() {
             showLoading(translations[currentLanguage].loadingAlerts);
             alertsList.innerHTML = '';
-            const mockAlerts = [
-                {
-                    id: 'eq-1',
-                    type: 'Earthquake',
-                    magnitude: 5.2,
-                    location: '15km NW of XYZ City',
-                    time: new Date(Date.now() - 30 * 60 * 1000).toLocaleString(),
-                    description: 'Moderate earthquake detected. Minor damage possible.',
-                    coords: { lat: 23.2599, lng: 77.4126 }
-                },
-                {
-                    id: 'flood-1',
-                    type: 'Flood Warning',
-                    magnitude: 'Severe',
-                    location: 'Riverside Area',
-                    time: new Date(Date.now() - 60 * 60 * 1000).toLocaleString(),
-                    description: 'Flash flood warning issued for low-lying areas. Seek higher ground.',
-                    coords: { lat: 23.2650, lng: 77.4200 }
-                },
-                {
-                    id: 'fire-1',
-                    type: 'Wildfire Alert',
-                    magnitude: 'High',
-                    location: 'Forest outskirts, North',
-                    time: new Date(Date.now() - 2 * 60 * 60 * 1000).toLocaleString(),
-                    description: 'Large wildfire spreading rapidly. Evacuate if in affected zones.',
-                    coords: { lat: 23.2700, lng: 77.4000 }
-                }
+            const allMockAlerts = [
+                { type: 'Earthquake', magnitude: 5.2, location: '15km NW of XYZ City', description: 'Moderate earthquake detected. Minor damage possible.' },
+                { type: 'Flood Warning', magnitude: 'Severe', location: 'Riverside Area', description: 'Flash flood warning issued for low-lying areas. Seek higher ground.' },
+                { type: 'Wildfire Alert', magnitude: 'High', location: 'Forest outskirts, North', description: 'Large wildfire spreading rapidly. Evacuate if in affected zones.' },
+                { type: 'Tornado Watch', magnitude: 'Moderate', location: 'Central Plains', description: 'Conditions favorable for tornado development. Stay alert.' },
+                { type: 'Heavy Rainfall', magnitude: 'Significant', location: 'Coastal Region', description: 'Heavy rainfall expected, potential for localized flooding.' },
+                { type: 'Heatwave Advisory', magnitude: 'Extreme', location: 'Desert Valleys', description: 'Dangerous heatwave. Stay hydrated, avoid prolonged sun exposure.' },
+                { type: 'Volcanic Activity', magnitude: 'Minor', location: 'Near Mount Peak', description: 'Increased seismic activity detected near volcano. Monitor updates.' },
+                { type: 'Blizzard Warning', magnitude: 'Severe', location: 'Mountain Passes', description: 'Heavy snow and strong winds expected. Travel not recommended.' },
+                { type: 'Landslide Risk', magnitude: 'High', location: 'Hilly Terrain', description: 'Increased risk of landslides due to recent rains.' },
+                { type: 'Drought Warning', magnitude: 'Critical', location: 'Agricultural Belt', description: 'Severe drought conditions. Conserve water.' },
+                { type: 'Cyber Attack', magnitude: 'High', location: 'National Infrastructure', description: 'Critical cyber attack detected. Internet disruptions possible.' },
+                { type: 'Chemical Spill', magnitude: 'Localized', location: 'Industrial Park', description: 'Hazardous chemical spill. Shelter in place if nearby.' }
             ];
+
+            const numberOfAlerts = Math.floor(Math.random() * 4) + 3;
+            const shuffled = allMockAlerts.sort(() => 0.5 - Math.random());
+            const selectedAlerts = shuffled.slice(0, numberOfAlerts);
+
             setTimeout(() => {
-                mockAlerts.forEach(alert => {
+                selectedAlerts.forEach((alert, index) => {
                     const alertCard = document.createElement('div');
                     alertCard.className = 'alert-card';
                     alertCard.innerHTML = `
@@ -1260,7 +1268,7 @@
                         <p><strong>Magnitude/Severity:</strong> ${alert.magnitude}</p>
                         <p><strong>Location:</strong> ${alert.location}</p>
                         <p><strong>Description:</strong> ${alert.description}</p>
-                        <p class="alert-time">Reported: ${alert.time}</p>
+                        <p class="alert-time">Reported: ${new Date(Date.now() - (index * 15 * 60 * 1000)).toLocaleString()}</p>
                     `;
                     alertsList.appendChild(alertCard);
                 });
@@ -1637,13 +1645,13 @@
                 if (snapshot.empty) {
                     messageFeed.innerHTML = `<p>${translations[currentLanguage].sharedStatusDescription}</p>`;
                 } else {
-                    snapshot.forEach(doc => {
+                    snapshot.forEach(doc => { // Iterate normally, as flex-direction is now column
                         const messageData = doc.data();
                         const senderDisplay = messageData.senderId.substring(0, 8) + '...';
                         const messageItem = document.createElement('div');
                         messageItem.className = 'message-item';
                         messageItem.innerHTML = `<strong>${senderDisplay}:</strong> ${messageData.message}`;
-                        messageFeed.appendChild(messageItem);
+                        messageFeed.appendChild(messageItem); // Append to bottom
                     });
                 }
                 hideLoading();
@@ -1667,6 +1675,16 @@
             currentUtterance.lang = currentLanguage;
             currentUtterance.rate = 1;
             currentUtterance.pitch = 1;
+            
+            // Log available voices for debugging
+            synth.onvoiceschanged = () => {
+                console.log("Available voices:", synth.getVoices());
+            };
+            // Call immediately if voices are already loaded
+            if (synth.getVoices().length > 0) {
+                console.log("Available voices (initial):", synth.getVoices());
+            }
+
             synth.speak(currentUtterance);
         }
         function stopSpeaking() {
@@ -1762,10 +1780,12 @@
                     const alerts = sectionElement.querySelectorAll('.alert-card');
                     if (alerts.length > 0) {
                         contentToSpeak += " Current alerts include: ";
-                        alerts.slice(0, 2).forEach((alert, index) => {
+                        alerts.forEach((alert) => { // Iterate over all alerts
                             const type = alert.querySelector('h3').textContent;
-                            const loc = alert.querySelector('p:nth-of-type(2)').textContent;
-                            contentToSpeak += `${type} at ${loc}. `;
+                            // Extract only the value after "Location:" and "Description:"
+                            const locationText = alert.querySelector('p:nth-of-type(2)').textContent.replace('Location:', '').trim();
+                            const descriptionText = alert.querySelector('p:nth-of-type(3)').textContent.replace('Description:', '').trim();
+                            contentToSpeak += `${type}. Location: ${locationText}. Description: ${descriptionText}. `;
                         });
                     }
                 }
@@ -1773,7 +1793,7 @@
                     const contacts = sectionElement.querySelectorAll('.contact-card p');
                     if (contacts.length > 0) {
                         contentToSpeak += " Your trusted contacts include: ";
-                        contacts.slice(0, 2).forEach((contact, index) => {
+                        contacts.forEach((contact) => { // Iterate over all contacts
                             contentToSpeak += `${contact.textContent}. `;
                         });
                     }
@@ -1782,11 +1802,12 @@
                     const messages = sectionElement.querySelectorAll('.message-item');
                     if (messages.length > 0) {
                         contentToSpeak += " Recent messages: ";
-                        messages.slice(0, 2).forEach((message, index) => {
+                        messages.forEach((message) => { // Iterate over all messages
                             contentToSpeak += `${message.textContent}. `;
                         });
                     }
                 }
+                console.log("Speaking:", contentToSpeak); // For debugging
                 speakText(contentToSpeak);
             }
         }
@@ -1832,6 +1853,7 @@
             currentTutorialStepIndex = 0;
             tutorialOverlay.classList.remove('hidden');
             tutorialOverlay.classList.add('show');
+            document.getElementById('map-click-blocker').classList.remove('hidden'); // Show blocker
             showTutorialStep(currentTutorialStepIndex);
         }
         function showTutorialStep(index) {
@@ -1876,6 +1898,7 @@
         function endTutorial() {
             tutorialOverlay.classList.remove('show');
             tutorialOverlay.classList.add('hidden');
+            document.getElementById('map-click-blocker').classList.add('hidden'); // Hide blocker
             if (currentTutorialStepIndex > -1 && tutorialSteps[currentTutorialStepIndex].id) {
                 const prevElement = document.getElementById(tutorialSteps[currentTutorialStepIndex].id);
                 if (prevElement) {
