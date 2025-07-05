@@ -1186,57 +1186,7 @@
             errorPage.classList.remove('hidden');
             hideLoading();
         }
-        async function initializeFirebase() {
-            try {
-                const firebaseConfig = {
-                    apiKey: "YOUR_FIREBASE_API_KEY",
-                    authDomain: "YOUR_FIREBASE_AUTH_DOMAIN",
-                    projectId: "YOUR_FIREBASE_PROJECT_ID",
-                    storageBucket: "YOUR_FIREBASE_STORAGE_BUCKET",
-                    messagingSenderId: "YOUR_FIREBASE_MESSAGING_SENDER_ID",
-                    appId: "YOUR_FIREBASE_APP_ID"
-                };
-                if (firebaseConfig.apiKey === "YOUR_FIREBASE_API_KEY") {
-                    console.warn("Firebase configuration is using placeholder values. Contact saving/loading and shared status will not work.");
-                    app = null; 
-                    db = null;  
-                    userId = 'anonymous_local_user';
-                    isAuthReady = true;
-                    showContent();
-                    return; 
-                }
-                app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-                onAuthStateChanged(auth, async (user) => {
-                    if (!isAuthReady) {
-                        isAuthReady = true;
-                        if (user) {
-                            userId = user.uid;
-                        } else {
-                            try {
-                                const anonUserCred = await signInAnonymously(auth);
-                                userId = anonUserCred.user.uid;
-                            } catch (anonError) {
-                                console.error("Error signing in anonymously:", anonError);
-                                showMessageBox("Failed to sign in anonymously. Shared features may not work.", 'error');
-                                userId = 'anonymous_error_user';
-                            }
-                        }
-                        console.log("Firebase (Firestore & Anonymous Auth) initialized. User ID:", userId);
-                        showContent();
-                    }
-                    applyLanguage();
-                });
-            } catch (error) {
-                console.error("Firebase initialization error:", error);
-                showMessageBox("Firebase initialization failed. Check console for details. Some features disabled.", 'error');
-                showCustomErrorPage(); 
-                app = null;
-                db = null;
-                userId = 'initialization_error';
-            }
-        }
+        
         async function fetchDisasterAlerts() {
             showLoading(translations[currentLanguage].loadingAlerts);
             alertsList.innerHTML = '';
