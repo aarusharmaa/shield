@@ -604,7 +604,7 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.7);
-            z-index: 99999; /* HIGHEST Z-INDEX for the overlay */
+            z-index: 9999; /* Increased z-index */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -626,7 +626,7 @@
             text-align: center;
             position: relative;
             animation: slideIn 0.5s ease-out;
-            z-index: 100000; /* HIGHER THAN OVERLAY for the card itself */
+            z-index: 10000; /* Increased z-index */
         }
         @keyframes slideIn {
             from { transform: translateY(50px); opacity: 0; }
@@ -648,7 +648,7 @@
         }
         .tutorial-highlight {
             position: relative;
-            z-index: 100001; /* HIGHEST Z-INDEX for the highlighted element */
+            z-index: 10001; /* Increased z-index */
             box-shadow: 0 0 0 5px var(--secondary-color), 0 0 15px var(--secondary-color);
             transition: box-shadow 0.3s ease;
             border-radius: 12px;
@@ -728,17 +728,16 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        /* This blocker is no longer needed with proper z-index on tutorial-overlay */
-        /* #map-click-blocker {
+        #map-click-blocker {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             background-color: transparent;
-            z-index: 9998;
-            display: none;
-        } */
+            z-index: 9998; /* Just below tutorial-overlay (9999) */
+            display: none; /* Hidden by default */
+        }
     </style>
 </head>
 <body>
@@ -761,7 +760,7 @@
             </div>
         </div>
     </div>
-    <!-- The map-click-blocker is removed as the z-index on tutorial-overlay now handles blocking clicks -->
+    <div id="map-click-blocker" class="hidden"></div> <!-- Map click blocker -->
     <header>
         <div class="logo">
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -1034,6 +1033,7 @@
                 userIdDisplay: "उपयोगकर्ता आईडी:",
                 mapApiError: "Google Maps API सक्रिय नहीं है या कुंजी अमान्य है। कृपया इस एपीआई कुंजी के लिए अपने Google Cloud प्रोजेक्ट में Maps JavaScript API सक्षम करें: https://console.cloud.google.com/apis/library/maps-platform-apis",
                 startTour: "टूर शुरू करें",
+                tutorialSkip: "टूर छोड़ें",
                 tutorialPrev: "पिछला",
                 tutorialNext: "अगला",
                 tutorialWelcome: "नमस्ते! मैं शील्ड के लिए आपका मार्गदर्शक हूँ। आइए इसकी विशेषताओं का अन्वेषण करें।",
@@ -1172,27 +1172,20 @@
             localStorage.setItem('highContrastMode', isHighContrast ? 'enabled' : 'disabled');
             highContrastLabel.textContent = isHighContrast ? "Standard Mode" : translations[currentLanguage].highContrastLabel;
         }
-        async function showContent() {
+        function showContent() {
             appContent.classList.remove('hidden');
-            // Use Promise.all to wait for all critical components to load
-            await Promise.all([
-                fetchDisasterAlerts(),
-                loadGoogleMaps(),
-                loadTrustedContacts(), 
-                fetchWeatherDataAndApplyTheme(), 
-                loadSharedStatusUpdates()
-            ]).catch(error => {
-                console.error("One or more initial loading tasks failed:", error);
-                showMessageBox("Some features failed to load. Check console for details.", 'error', 5000);
-            });
-            hideLoading(); // Hide loading overlay only after all promises resolve
+            fetchDisasterAlerts();
+            loadGoogleMaps();
+            loadTrustedContacts(); 
+            fetchWeatherDataAndApplyTheme(); 
+            loadSharedStatusUpdates();
+            hideLoading();
         }
         function showCustomErrorPage() {
             appContent.classList.add('hidden');
             errorPage.classList.remove('hidden');
             hideLoading();
         }
-    
         async function initializeFirebase() {
             try {
                 const firebaseConfig = {
@@ -1209,35 +1202,31 @@
                     db = null;  
                     userId = 'anonymous_local_user';
                     isAuthReady = true;
-                    // Directly resolve if Firebase is not configured to allow other features to load
-                    return Promise.resolve(); 
+                    showContent();
+                    return; 
                 }
                 app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
-                return new Promise((resolve, reject) => {
-                    onAuthStateChanged(auth, async (user) => {
-                        if (!isAuthReady) {
-                            isAuthReady = true;
-                            if (user) {
-                                userId = user.uid;
-                            } else {
-                                try {
-                                    const anonUserCred = await signInAnonymously(auth);
-                                    userId = anonUserCred.user.uid;
-                                } catch (anonError) {
-                                    console.error("Error signing in anonymously:", anonError);
-                                    showMessageBox("Failed to sign in anonymously. Shared features may not work.", 'error');
-                                    userId = 'anonymous_error_user';
-                                    reject(anonError); // Reject if anonymous sign-in fails
-                                    return;
-                                }
+                onAuthStateChanged(auth, async (user) => {
+                    if (!isAuthReady) {
+                        isAuthReady = true;
+                        if (user) {
+                            userId = user.uid;
+                        } else {
+                            try {
+                                const anonUserCred = await signInAnonymously(auth);
+                                userId = anonUserCred.user.uid;
+                            } catch (anonError) {
+                                console.error("Error signing in anonymously:", anonError);
+                                showMessageBox("Failed to sign in anonymously. Shared features may not work.", 'error');
+                                userId = 'anonymous_error_user';
                             }
-                            console.log("Firebase (Firestore & Anonymous Auth) initialized. User ID:", userId);
-                            resolve(); // Resolve promise once auth is ready
                         }
-                        applyLanguage();
-                    });
+                        console.log("Firebase (Firestore & Anonymous Auth) initialized. User ID:", userId);
+                        showContent();
+                    }
+                    applyLanguage();
                 });
             } catch (error) {
                 console.error("Firebase initialization error:", error);
@@ -1246,11 +1235,10 @@
                 app = null;
                 db = null;
                 userId = 'initialization_error';
-                return Promise.reject(error); // Reject the promise on initialization error
             }
         }
         async function fetchDisasterAlerts() {
-            // No showLoading/hideLoading here, handled by showContent
+            showLoading(translations[currentLanguage].loadingAlerts);
             alertsList.innerHTML = '';
             const allMockAlerts = [
                 { type: 'Earthquake', magnitude: 5.2, location: '15km NW of XYZ City', description: 'Moderate earthquake detected. Minor damage possible.' },
@@ -1271,36 +1259,35 @@
             const shuffled = allMockAlerts.sort(() => 0.5 - Math.random());
             const selectedAlerts = shuffled.slice(0, numberOfAlerts);
 
-            return new Promise(resolve => {
-                setTimeout(() => {
-                    selectedAlerts.forEach((alert, index) => {
-                        const alertCard = document.createElement('div');
-                        alertCard.className = 'alert-card';
-                        alertCard.innerHTML = `
-                            <h3>${alert.type}</h3>
-                            <p><strong>Magnitude/Severity:</strong> ${alert.magnitude}</p>
-                            <p><strong>Location:</strong> ${alert.location}</p>
-                            <p><strong>Description:</strong> ${alert.description}</p>
-                            <p class="alert-time">Reported: ${new Date(Date.now() - (index * 15 * 60 * 1000)).toLocaleString()}</p>
-                        `;
-                        alertsList.appendChild(alertCard);
-                    });
-                    resolve(); // Resolve when alerts are rendered
-                }, 1500); // Simulate network delay
-            });
+            setTimeout(() => {
+                selectedAlerts.forEach((alert, index) => {
+                    const alertCard = document.createElement('div');
+                    alertCard.className = 'alert-card';
+                    alertCard.innerHTML = `
+                        <h3>${alert.type}</h3>
+                        <p><strong>Magnitude/Severity:</strong> ${alert.magnitude}</p>
+                        <p><strong>Location:</strong> ${alert.location}</p>
+                        <p><strong>Description:</strong> ${alert.description}</p>
+                        <p class="alert-time">Reported: ${new Date(Date.now() - (index * 15 * 60 * 1000)).toLocaleString()}</p>
+                    `;
+                    alertsList.appendChild(alertCard);
+                });
+                hideLoading();
+            }, 1500);
         }
         let map;
         let userMarker;
         let directionsService;
         let directionsRenderer;
         function loadGoogleMaps() {
-            // No showLoading/hideLoading here, handled by showContent
+            showLoading(translations[currentLanguage].loadingMap);
             const GOOGLE_MAPS_API_KEY = 'AIzaSyBy3rkdHLTh-WOR2x18SpzVHjw9w4w-FaM';
             if (GOOGLE_MAPS_API_KEY === 'YOUR_GOOGLE_MAPS_API_KEY' || !GOOGLE_MAPS_API_KEY) {
                 console.error("Google Maps API key is not set or is a placeholder. Map functionality will be limited.");
                 mapErrorMessage.textContent = translations[currentLanguage].mapApiError;
                 mapErrorMessage.style.display = 'block';
-                return Promise.resolve(); // Resolve immediately if API key is missing
+                hideLoading();
+                return;
             } else {
                 mapErrorMessage.style.display = 'none';
             }
@@ -1308,46 +1295,45 @@
                 console.log("Google Maps script already initiated loading.");
                 if (window.google && window.google.maps) {
                     initializeMap();
-                    return Promise.resolve();
                 } else {
-                    // If script is loading but not ready, wait for its callback
-                    return new Promise(resolve => {
-                        window.resolveMapLoad = resolve; // Store resolve function for callback
-                    });
+                    console.log("Google Maps script still loading, waiting for callback.");
                 }
+                hideLoading();
+                return;
             }
             const script = document.createElement('script');
-            script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&callback=initializeMapCallback`; // Use a distinct callback name
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&callback=initializeMap`;
             script.async = true;
             script.defer = true;
             document.head.appendChild(script);
             isMapScriptLoaded = true;
-            return new Promise((resolve, reject) => {
-                window.resolveMapLoad = resolve; // Store resolve function for callback
-                script.onerror = () => {
-                    console.error("Failed to load Google Maps script. Check your API key and network connection.");
-                    showMessageBox("Failed to load Google Maps. Check your API key and network.", 'error', 5000);
-                    mapErrorMessage.textContent = "Failed to load Google Maps script. Check your network and console for details.";
-                    mapErrorMessage.style.display = 'block';
-                    reject(new Error("Google Maps script failed to load."));
-                };
-            });
+            script.onerror = () => {
+                console.error("Failed to load Google Maps script. Check your API key and network connection.");
+                showMessageBox("Failed to load Google Maps. Check your API key and network.", 'error', 5000);
+                mapErrorMessage.textContent = "Failed to load Google Maps script. Check your network and console for details.";
+                mapErrorMessage.style.display = 'block';
+                hideLoading();
+            };
         }
-        // New distinct callback function for Google Maps
-        window.initializeMapCallback = function() {
-            console.log("initializeMapCallback triggered.");
+        window.gm_authFailure = function() {
+            console.error("Google Maps API authentication failed. Check your API key and its restrictions.");
+            mapErrorMessage.textContent = translations[currentLanguage].mapApiError;
+            mapErrorMessage.style.display = 'block';
+            hideLoading();
+        };
+        window.initializeMap = function() {
+            console.log("initializeMap callback triggered.");
             mapErrorMessage.style.display = 'none';
             if (typeof google === 'undefined' || typeof google.maps === 'undefined') {
-                console.error("Google Maps API is not fully loaded when initializeMapCallback is called.");
+                console.error("Google Maps API is not fully loaded when initializeMap is called.");
                 mapErrorMessage.textContent = translations[currentLanguage].mapApiError;
                 mapErrorMessage.style.display = 'block';
-                if (window.resolveMapLoad) window.resolveMapLoad(); // Resolve to not block loading
+                hideLoading();
                 return;
             }
             if (!navigator.geolocation) {
                 showMessageBox("Geolocation is not supported by your browser. Map will center on a default location.", 'info');
                 initializeMapWithCoords({ lat: 23.2599, lng: 77.4126 });
-                if (window.resolveMapLoad) window.resolveMapLoad(); // Resolve to not block loading
                 return;
             }
             try {
@@ -1359,7 +1345,6 @@
                             lng: position.coords.longitude
                         };
                         initializeMapWithCoords(userCoords);
-                        if (window.resolveMapLoad) window.resolveMapLoad(); // Resolve after map initialized
                     },
                     (error) => {
                         console.error("Error getting user location:", error.code, error.message || error);
@@ -1373,7 +1358,6 @@
                         }
                         showMessageBox(errorMessage, 'error');
                         initializeMapWithCoords({ lat: 23.2599, lng: 77.4126 });
-                        if (window.resolveMapLoad) window.resolveMapLoad(); // Resolve to not block loading
                     },
                     {
                         enableHighAccuracy: true,
@@ -1385,14 +1369,13 @@
                 console.error("Geolocation API call failed:", e);
                 showMessageBox("Geolocation API call failed. Please ensure your browser supports and allows location services.", 'error');
                 initializeMapWithCoords({ lat: 23.2599, lng: 77.4126 });
-                if (window.resolveMapLoad) window.resolveMapLoad(); // Resolve to not block loading
             }
         };
-        window.initializeMap = window.initializeMapCallback; // Alias for backward compatibility if needed, but prefer initializeMapCallback
         function initializeMapWithCoords(coords) {
             const mapElement = document.getElementById('map');
             if (!mapElement) {
                 console.error("Map element not found.");
+                hideLoading();
                 return;
             }
             mapElement.innerHTML = '';
@@ -1400,6 +1383,7 @@
                 console.error("Google Maps API is not fully loaded when initializeMapWithCoords is called.");
                 mapErrorMessage.textContent = translations[currentLanguage].mapApiError;
                 mapErrorMessage.style.display = 'block';
+                hideLoading();
                 return;
             }
             map = new google.maps.Map(mapElement, {
@@ -1471,13 +1455,13 @@
                     showMessageBox('Could not find a safe route. Please check your location.', 'error');
                 }
             });
+            hideLoading();
         }
         const OPENWEATHER_API_KEY = '897ca075931405ab51b2a14a8e8dc211';
         async function fetchWeatherDataAndApplyTheme() {
-            // No showLoading/hideLoading here, handled by showContent
             if (OPENWEATHER_API_KEY === 'YOUR_OPENWEATHER_API_KEY' || !OPENWEATHER_API_KEY) {
                 console.warn("OpenWeatherMap API key is not set. Dynamic theming will not work.");
-                return Promise.resolve();
+                return;
             }
             let lat = 23.2599;
             let lon = 77.4126;
@@ -1500,11 +1484,9 @@
                 const data = await response.json();
                 console.log("Weather data:", data);
                 applyThemeBasedOnWeather(data);
-                return Promise.resolve();
             } catch (error) {
                 console.error("Failed to fetch weather data:", error);
                 showMessageBox("Failed to get weather data for dynamic theming.", 'error');
-                return Promise.reject(error);
             }
         }
         function applyThemeBasedOnWeather(weatherData) {
@@ -1592,37 +1574,34 @@
             }
         }
         function loadTrustedContacts() {
-            // No showLoading/hideLoading here, handled by showContent
             if (!db || !userId || userId === 'anonymous_error_user') {
                 contactsList.innerHTML = `<p>${translations[currentLanguage].contactsDescription}</p>`;
-                return Promise.resolve();
+                return;
             }
-            return new Promise((resolve, reject) => {
-                const contactsColRef = collection(db, `artifacts/${appId}/users/${userId}/contacts`);
-                const unsubscribe = onSnapshot(contactsColRef, (snapshot) => {
-                    contactsList.innerHTML = '';
-                    if (snapshot.empty) {
-                        contactsList.innerHTML = `<p>${translations[currentLanguage].contactsDescription}</p>`;
-                    } else {
-                        snapshot.forEach(doc => {
-                            const contact = doc.data();
-                            const contactCard = document.createElement('div');
-                            contactCard.className = 'contact-card';
-                            contactCard.innerHTML = `
-                                <p><strong>${contact.name}</strong>: ${contact.phone}</p>
-                                <button data-id="${doc.id}">Delete</button>
-                            `;
-                            contactCard.querySelector('button').addEventListener('click', () => deleteTrustedContact(doc.id));
-                            contactsList.appendChild(contactCard);
-                        });
-                    }
-                    resolve(); // Resolve when data is loaded/rendered
-                    unsubscribe(); // Unsubscribe after initial load if real-time updates aren't needed for this specific promise
-                }, (error) => {
-                    console.error("Error fetching contacts:", error);
-                    showMessageBox("Failed to load contacts.", 'error');
-                    reject(error);
-                });
+            showLoading(translations[currentLanguage].loadingContacts);
+            const contactsColRef = collection(db, `artifacts/${appId}/users/${userId}/contacts`);
+            onSnapshot(contactsColRef, (snapshot) => {
+                contactsList.innerHTML = '';
+                if (snapshot.empty) {
+                    contactsList.innerHTML = `<p>${translations[currentLanguage].contactsDescription}</p>`;
+                } else {
+                    snapshot.forEach(doc => {
+                        const contact = doc.data();
+                        const contactCard = document.createElement('div');
+                        contactCard.className = 'contact-card';
+                        contactCard.innerHTML = `
+                            <p><strong>${contact.name}</strong>: ${contact.phone}</p>
+                            <button data-id="${doc.id}">Delete</button>
+                        `;
+                        contactCard.querySelector('button').addEventListener('click', () => deleteTrustedContact(doc.id));
+                        contactsList.appendChild(contactCard);
+                    });
+                }
+                hideLoading();
+            }, (error) => {
+                console.error("Error fetching contacts:", error);
+                showMessageBox("Failed to load contacts.", 'error');
+                hideLoading();
             });
         }
         async function sendMessage(event) {
@@ -1654,35 +1633,32 @@
             }
         }
         function loadSharedStatusUpdates() {
-            // No showLoading/hideLoading here, handled by showContent
             if (!db || !userId || userId === 'anonymous_error_user') {
                 messageFeed.innerHTML = `<p>${translations[currentLanguage].sharedStatusDescription}</p>`;
-                return Promise.resolve();
+                return;
             }
-            return new Promise((resolve, reject) => {
-                const messagesColRef = collection(db, `artifacts/${appId}/public/data/shared_status_updates`);
-                const q = query(messagesColRef, orderBy("timestamp", "desc"), limit(10));
-                const unsubscribe = onSnapshot(q, (snapshot) => {
-                    messageFeed.innerHTML = '';
-                    if (snapshot.empty) {
-                        messageFeed.innerHTML = `<p>${translations[currentLanguage].sharedStatusDescription}</p>`;
-                    } else {
-                        snapshot.forEach(doc => {
-                            const messageData = doc.data();
-                            const senderDisplay = messageData.senderId.substring(0, 8) + '...';
-                            const messageItem = document.createElement('div');
-                            messageItem.className = 'message-item';
-                            messageItem.innerHTML = `<strong>${senderDisplay}:</strong> ${messageData.message}`;
-                            messageFeed.appendChild(messageItem);
-                        });
-                    }
-                    resolve(); // Resolve when data is loaded/rendered
-                    unsubscribe(); // Unsubscribe after initial load if real-time updates aren't needed for this specific promise
-                }, (error) => {
-                    console.error("Error fetching shared messages:", error);
-                    showMessageBox("Failed to load shared messages.", 'error');
-                    reject(error);
-                });
+            showLoading(translations[currentLanguage].loadingMessages);
+            const messagesColRef = collection(db, `artifacts/${appId}/public/data/shared_status_updates`);
+            const q = query(messagesColRef, orderBy("timestamp", "desc"), limit(10));
+            onSnapshot(q, (snapshot) => {
+                messageFeed.innerHTML = '';
+                if (snapshot.empty) {
+                    messageFeed.innerHTML = `<p>${translations[currentLanguage].sharedStatusDescription}</p>`;
+                } else {
+                    snapshot.forEach(doc => { // Iterate normally, as flex-direction is now column
+                        const messageData = doc.data();
+                        const senderDisplay = messageData.senderId.substring(0, 8) + '...';
+                        const messageItem = document.createElement('div');
+                        messageItem.className = 'message-item';
+                        messageItem.innerHTML = `<strong>${senderDisplay}:</strong> ${messageData.message}`;
+                        messageFeed.appendChild(messageItem); // Append to bottom
+                    });
+                }
+                hideLoading();
+            }, (error) => {
+                console.error("Error fetching shared messages:", error);
+                showMessageBox("Failed to load shared messages.", 'error');
+                hideLoading();
             });
         }
         const synth = window.speechSynthesis;
@@ -1700,9 +1676,14 @@
             currentUtterance.rate = 1;
             currentUtterance.pitch = 1;
             
-            // It's good practice to ensure voices are loaded before setting voice,
-            // but for a quick fix, focusing on the speaking part.
-            // For more robust voice selection, you'd use synth.getVoices() and filter.
+            // Log available voices for debugging
+            synth.onvoiceschanged = () => {
+                console.log("Available voices:", synth.getVoices());
+            };
+            // Call immediately if voices are already loaded
+            if (synth.getVoices().length > 0) {
+                console.log("Available voices (initial):", synth.getVoices());
+            }
 
             synth.speak(currentUtterance);
         }
@@ -1794,48 +1775,39 @@
             if (sectionElement) {
                 const title = sectionElement.querySelector('h2 span[data-lang-key]').textContent;
                 const description = sectionElement.querySelector('p[data-lang-key]').textContent;
-                let contentToSpeak = `${title}. ${description}.`; // Add a period for better pause
-
+                let contentToSpeak = `${title}. ${description}`;
                 if (sectionId === 'alert-section') {
                     const alerts = sectionElement.querySelectorAll('.alert-card');
                     if (alerts.length > 0) {
                         contentToSpeak += " Current alerts include: ";
-                        alerts.forEach((alert) => {
+                        alerts.forEach((alert) => { // Iterate over all alerts
                             const type = alert.querySelector('h3').textContent;
-                            // Get the full text content of the p tags, then clean it up
-                            const magnitudeText = alert.querySelector('p:nth-of-type(1)').textContent.trim();
-                            const locationText = alert.querySelector('p:nth-of-type(2)').textContent.trim();
-                            const descriptionText = alert.querySelector('p:nth-of-type(3)').textContent.trim();
-                            contentToSpeak += `${type}. ${magnitudeText}. ${locationText}. ${descriptionText}. `;
+                            // Extract only the value after "Location:" and "Description:"
+                            const locationText = alert.querySelector('p:nth-of-type(2)').textContent.replace('Location:', '').trim();
+                            const descriptionText = alert.querySelector('p:nth-of-type(3)').textContent.replace('Description:', '').trim();
+                            contentToSpeak += `${type}. Location: ${locationText}. Description: ${descriptionText}. `;
                         });
-                    } else {
-                        contentToSpeak += " No active alerts at this time.";
                     }
                 }
                 else if (sectionId === 'contacts-section') {
                     const contacts = sectionElement.querySelectorAll('.contact-card p');
                     if (contacts.length > 0) {
                         contentToSpeak += " Your trusted contacts include: ";
-                        contacts.forEach((contact) => {
+                        contacts.forEach((contact) => { // Iterate over all contacts
                             contentToSpeak += `${contact.textContent}. `;
                         });
-                    } else {
-                        contentToSpeak += " You have no trusted contacts added yet.";
                     }
                 }
                 else if (sectionId === 'shared-status-section') {
                     const messages = sectionElement.querySelectorAll('.message-item');
                     if (messages.length > 0) {
                         contentToSpeak += " Recent messages: ";
-                        // Read only a few recent messages to avoid very long speech
-                        Array.from(messages).reverse().slice(0, 3).forEach((message) => { // Get last 3 messages
+                        messages.forEach((message) => { // Iterate over all messages
                             contentToSpeak += `${message.textContent}. `;
                         });
-                    } else {
-                        contentToSpeak += " No shared status updates yet.";
                     }
                 }
-                console.log("Attempting to speak:", contentToSpeak); // For debugging
+                console.log("Speaking:", contentToSpeak); // For debugging
                 speakText(contentToSpeak);
             }
         }
@@ -1848,7 +1820,7 @@
             },
             {
                 id: 'alert-section',
-                character: '�',
+                character: '🚨',
                 messageKey: 'tutorialAlerts'
             },
             {
@@ -1881,6 +1853,7 @@
             currentTutorialStepIndex = 0;
             tutorialOverlay.classList.remove('hidden');
             tutorialOverlay.classList.add('show');
+            document.getElementById('map-click-blocker').classList.remove('hidden'); // Show blocker
             showTutorialStep(currentTutorialStepIndex);
         }
         function showTutorialStep(index) {
@@ -1888,7 +1861,6 @@
                 endTutorial();
                 return;
             }
-            // Remove highlight from previous step if any
             if (currentTutorialStepIndex > -1 && tutorialSteps[currentTutorialStepIndex].id) {
                 const prevElement = document.getElementById(tutorialSteps[currentTutorialStepIndex].id);
                 if (prevElement) {
@@ -1926,7 +1898,7 @@
         function endTutorial() {
             tutorialOverlay.classList.remove('show');
             tutorialOverlay.classList.add('hidden');
-            // Ensure any active highlight is removed
+            document.getElementById('map-click-blocker').classList.add('hidden'); // Hide blocker
             if (currentTutorialStepIndex > -1 && tutorialSteps[currentTutorialStepIndex].id) {
                 const prevElement = document.getElementById(tutorialSteps[currentTutorialStepIndex].id);
                 if (prevElement) {
@@ -1935,10 +1907,9 @@
             }
             currentTutorialStepIndex = -1;
         }
-        document.addEventListener('DOMContentLoaded', async () => { // Made async to await initializeFirebase
+        document.addEventListener('DOMContentLoaded', () => {
             showLoading(translations[currentLanguage].loadingApp);
-            await initializeFirebase(); // Await Firebase init before proceeding
-            // Initial theme application based on saved preferences
+            initializeFirebase();
             const savedDarkMode = localStorage.getItem('darkMode');
             if (savedDarkMode === 'enabled') {
                 document.body.classList.add('dark-mode');
@@ -1975,13 +1946,8 @@
             tutorialNextBtn.addEventListener('click', nextTutorialStep);
             tutorialPrevBtn.addEventListener('click', prevTutorialStep);
             tutorialSkipBtn.addEventListener('click', endTutorial);
-
-            // Now call showContent after initial setup
-            showContent();
         });
-        // Ensure the global callback for Google Maps is defined
-        window.initializeMapCallback = window.initializeMapCallback || function() { console.log("Google Maps callback placeholder."); };
+        window.initializeMap = window.initializeMap || function() { console.log("Google Maps callback placeholder."); };
     </script>
 </body>
 </html>
-�
